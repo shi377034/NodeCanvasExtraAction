@@ -1,0 +1,10 @@
+*.sln
+*.csproj
+*.vscode
+Canvas Extend/Library
+Canvas Extend/Temp
+Canvas Extend/obj
+Canvas Extend/UIElementsSchema
+Canvas Extend/.vs
+Canvas Extend/ProjectSettings/ProjectVersion.txt
+*.user
