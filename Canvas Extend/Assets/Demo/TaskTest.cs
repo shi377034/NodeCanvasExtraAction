@@ -5,7 +5,8 @@ using UnityEngine;
 
 public class TaskTest
 {
-
+    public float x;
+    public float X { get { return x; } set { x = value; } }
     public Status Run(int state)
     {
         Status status = Status.Success;
