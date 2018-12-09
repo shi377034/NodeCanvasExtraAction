@@ -15,3 +15,4 @@ MonoBehaviour:
     mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]]"},"sceneCount":{"_propertyPath":"UnityEngine.SceneManagement.SceneManager.sceneCount","_name":"sceneCount","$type":"NodeCanvas.Framework.Variable`1[[System.Int32,
     mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]]"}}}'
   _objectReferences: []
+  _IsStatic: 0

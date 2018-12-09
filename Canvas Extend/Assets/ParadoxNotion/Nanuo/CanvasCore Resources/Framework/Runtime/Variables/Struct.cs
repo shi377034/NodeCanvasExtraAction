@@ -24,10 +24,13 @@ namespace NodeCanvas.Framework{
 		[NonSerialized]
 		private BlackboardSource _blackboard = new BlackboardSource();
 		[NonSerialized]
-		private bool hasDeserialized = false;
-
-		//serialize blackboard variables to json
-		void ISerializationCallbackReceiver.OnBeforeSerialize(){
+        private bool hasDeserialized = false;
+        [SerializeField]
+        private bool _IsStatic;
+        public bool IsStatic { get { return _IsStatic; } set { _IsStatic = value; } }
+        public bool IsInstance { get; set; }
+        //serialize blackboard variables to json
+        void ISerializationCallbackReceiver.OnBeforeSerialize(){
 			#if UNITY_EDITOR
 			if (JSONSerializer.applicationPlaying){
 				 return;
@@ -209,5 +212,12 @@ namespace NodeCanvas.Framework{
             _blackboard.InitializePropertiesBinding(propertiesBindTarget, true);
             return true;
 		}
+        public Struct Clone(bool instance = true)
+        {
+            Struct newStruct = Instantiate(this);
+            newStruct.name = newStruct.name.Replace("(Clone)", "");
+            newStruct.IsInstance = instance;
+            return newStruct;
+        }
     }
 }

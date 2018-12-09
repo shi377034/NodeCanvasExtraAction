@@ -16,9 +16,10 @@ namespace NodeCanvas.Tasks.Actions{
         }
         protected override string OnInit()
         {
-            Struct newStruct = Object.Instantiate(Struct.value);
-            newStruct.name = newStruct.name.Replace("(Clone)", "");
-            currentInstance = newStruct;
+            if(!Struct.value.IsInstance && !Struct.value.IsStatic)
+            {
+                currentInstance = Struct.value.Clone();
+            }
             return null;
         }
     }

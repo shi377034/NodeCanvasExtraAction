@@ -17,6 +17,7 @@ namespace NodeCanvas.Editor{
 		}
 
 		public override void OnInspectorGUI(){
+            bb.IsStatic = EditorGUILayout.Toggle("Static", bb.IsStatic);
 			BlackboardEditor.ShowVariables(bb, bb);
 			EditorUtils.EndOfInspector();
 			if (Application.isPlaying || Event.current.isMouse){
