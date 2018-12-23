@@ -11,6 +11,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 81a1db39f99e9f643b485efdeadeb19a, type: 3}
   m_Name: New Struct
   m_EditorClassIdentifier: 
+  _parent: {fileID: 0}
   _serializedBlackboard: '{"_variables":{"Count":{"_name":"Count","_id":"3c6d0557-427b-4b1f-b6c5-dc8413f8009e","$type":"NodeCanvas.Framework.Variable`1[[System.Int32,
     mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]]"},"sceneCount":{"_propertyPath":"UnityEngine.SceneManagement.SceneManager.sceneCount","_name":"sceneCount","$type":"NodeCanvas.Framework.Variable`1[[System.Int32,
     mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]]"}}}'

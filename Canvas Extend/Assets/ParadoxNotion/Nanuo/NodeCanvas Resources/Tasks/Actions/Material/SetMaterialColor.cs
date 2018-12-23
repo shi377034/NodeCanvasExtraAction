@@ -18,6 +18,7 @@ namespace NodeCanvas.Tasks.Actions{
             if (material.value != null)
             {
                 material.value.SetColor(colorName, color.value);
+                EndAction();
                 return;
             }
 

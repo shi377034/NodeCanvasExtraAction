@@ -34,7 +34,7 @@ namespace NodeCanvas.Tasks.Actions{
             {
                 valueA.bb = Struct.value;
                 NodeCanvas.Editor.BBParameterEditor.ParameterField("valueA", valueA, true);
-                NodeCanvas.Editor.BBParameterEditor.ParameterField("valueB", valueB, true);
+                NodeCanvas.Editor.BBParameterEditor.ParameterField("valueB", valueB, false);
             }
         }
 #endif

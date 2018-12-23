@@ -17,6 +17,7 @@ namespace NodeCanvas.Tasks.Actions{
             if (material.value != null)
             {
                 material.value.SetFloat(namedFloat.value, floatValue.value);
+                EndAction();
                 return;
             }
 

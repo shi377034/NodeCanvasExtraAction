@@ -19,6 +19,7 @@ namespace NodeCanvas.Tasks.Actions{
             if (material.value != null)
             {
                 material.value.SetTexture(namedTex, texture.value);
+                EndAction();
                 return;
             }
 

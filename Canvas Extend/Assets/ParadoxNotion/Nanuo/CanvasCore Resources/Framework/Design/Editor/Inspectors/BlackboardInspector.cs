@@ -17,6 +17,15 @@ namespace NodeCanvas.Editor{
 		}
 
 		public override void OnInspectorGUI(){
+            var Parent = (Struct)EditorGUILayout.ObjectField("Parent", bb.Parent, typeof(Struct), false);
+            if(Parent != bb.Parent && Parent == bb)
+            {
+                Debug.LogError("The parent node cannot be itself");
+            }
+            if(Parent != bb)
+            {
+                bb.Parent = Parent;
+            }    
             bb.IsStatic = EditorGUILayout.Toggle("Static", bb.IsStatic);
 			BlackboardEditor.ShowVariables(bb, bb);
 			EditorUtils.EndOfInspector();

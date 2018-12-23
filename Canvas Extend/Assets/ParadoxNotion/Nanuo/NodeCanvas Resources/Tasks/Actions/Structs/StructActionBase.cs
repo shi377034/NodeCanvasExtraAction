@@ -16,6 +16,10 @@ namespace NodeCanvas.Tasks.Actions{
         }
         protected override string OnInit()
         {
+            if(Struct.value.IsStatic)
+            {
+                currentInstance = Struct.value.Static;
+            }
             if(!Struct.value.IsInstance && !Struct.value.IsStatic)
             {
                 currentInstance = Struct.value.Clone();
