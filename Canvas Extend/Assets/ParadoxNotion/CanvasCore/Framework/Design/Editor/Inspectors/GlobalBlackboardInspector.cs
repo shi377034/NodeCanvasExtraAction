@@ -6,39 +6,41 @@ using UnityEditor;
 using UnityEngine;
 
 
-namespace NodeCanvas.Editor{
+namespace NodeCanvas.Editor
+{
 
-	[CustomEditor(typeof(GlobalBlackboard))]
-	public class GlobalBlackboardInspector : UnityEditor.Editor {
+    [CustomEditor(typeof(GlobalBlackboard))]
+    public class GlobalBlackboardInspector : UnityEditor.Editor
+    {
 
-		private GlobalBlackboard bb{
-			get {return (GlobalBlackboard)target;}
-		}
+        private GlobalBlackboard bb {
+            get { return (GlobalBlackboard)target; }
+        }
 
-		public override void OnInspectorGUI(){
-		
-			if (Event.current.isMouse){
-				Repaint();
-			}
+        public override void OnInspectorGUI() {
 
-			UndoManager.CheckUndo(bb, "Global Blackboard");
-			GUI.backgroundColor = GlobalBlackboard.allGlobals.Find(b => b.name == bb.name && b != bb)? Color.red : Color.white;
-			bb.name = EditorGUILayout.TextField("Unique Name", bb.name);
-			GUI.backgroundColor = Color.white;
+            if ( Event.current.isMouse ) {
+                Repaint();
+            }
 
-			bb.dontDestroy = EditorGUILayout.Toggle("DontDestroyOnLoad", bb.dontDestroy);
-			if (GUI.changed){
-				UndoManager.CheckDirty(bb);
-			}
+            UndoManager.CheckUndo(bb, "Global Blackboard");
+            GUI.backgroundColor = GlobalBlackboard.allGlobals.Find(b => b.name == bb.name && b != bb) ? Color.red : Color.white;
+            bb.name = EditorGUILayout.TextField("Unique Name", bb.name);
+            GUI.backgroundColor = Color.white;
+
+            bb.dontDestroy = EditorGUILayout.Toggle("DontDestroyOnLoad", bb.dontDestroy);
+            if ( GUI.changed ) {
+                UndoManager.CheckDirty(bb);
+            }
 
 
-			BlackboardEditor.ShowVariables(bb, bb);
-			EditorUtils.EndOfInspector();
-			if (Application.isPlaying){
-				Repaint();
-			}
-		}
-	}
+            BlackboardEditor.ShowVariables(bb, bb);
+            EditorUtils.EndOfInspector();
+            if ( Application.isPlaying ) {
+                Repaint();
+            }
+        }
+    }
 }
 
 #endif

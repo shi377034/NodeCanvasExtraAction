@@ -3,14 +3,10 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace ParadoxNotion.Serialization.FullSerializer {
-    partial class fsConverterRegistrar {
-        public static Internal.DirectConverters.GUIStyleState_DirectConverter Register_GUIStyleState_DirectConverter;
-    }
-}
-
-namespace ParadoxNotion.Serialization.FullSerializer.Internal.DirectConverters {
-    public class GUIStyleState_DirectConverter : fsDirectConverter<GUIStyleState> {
+namespace ParadoxNotion.Serialization.FullSerializer.Internal.DirectConverters
+{
+    public class GUIStyleState_DirectConverter : fsDirectConverter<GUIStyleState>
+    {
         protected override fsResult DoSerialize(GUIStyleState model, Dictionary<string, fsData> serialized) {
             var result = fsResult.Success;
 

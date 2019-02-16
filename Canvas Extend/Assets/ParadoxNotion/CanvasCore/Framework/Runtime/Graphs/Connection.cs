@@ -5,222 +5,224 @@ using ParadoxNotion.Serialization.FullSerializer;
 using UnityEngine;
 
 
-namespace NodeCanvas.Framework {
+namespace NodeCanvas.Framework
+{
 
-	#if UNITY_EDITOR //handles missing types
-	[fsObject(Processor = typeof(fsRecoveryProcessor<Connection, MissingConnection>))]
-	#endif
+#if UNITY_EDITOR //handles missing types
+    [fsObject(Processor = typeof(fsRecoveryProcessor<Connection, MissingConnection>))]
+#endif
 
-	///Base class for connections between nodes in a graph
-	[ParadoxNotion.Design.SpoofAOT]
-	abstract public partial class Connection : IGraphElement {
+    ///Base class for connections between nodes in a graph
+    [ParadoxNotion.Design.SpoofAOT]
+    abstract public partial class Connection : IGraphElement
+    {
 
-		[SerializeField]
-		private Node _sourceNode;
-		[SerializeField]
-		private Node _targetNode;
-		[SerializeField]
-		private bool _isDisabled;
-		
-		[System.NonSerialized]		
-		private Status _status = Status.Resting;
+        [SerializeField]
+        private Node _sourceNode;
+        [SerializeField]
+        private Node _targetNode;
+        [SerializeField]
+        private bool _isDisabled;
 
-		///The source node of the connection
-		public Node sourceNode{
-			get {return _sourceNode; }
-			protected set {_sourceNode = value;}
-		}
+        [System.NonSerialized]
+        private Status _status = Status.Resting;
 
-		///The target node of the connection
-		public Node targetNode{
-			get {return _targetNode; }
-			protected set {_targetNode = value;}
-		}
+        ///The source node of the connection
+        public Node sourceNode {
+            get { return _sourceNode; }
+            protected set { _sourceNode = value; }
+        }
 
-		///Is the connection active?
-		public bool isActive{
-			get	{return !_isDisabled;}
-			set
-			{
-				if (!_isDisabled && value == false){
-					Reset();
-				}
-				_isDisabled = !value;
-			}
-		}
+        ///The target node of the connection
+        public Node targetNode {
+            get { return _targetNode; }
+            protected set { _targetNode = value; }
+        }
 
-		///The connection status
-		public Status status{
-			get {return _status;}
-			set {_status = value;}
-		}
+        ///Is the connection active?
+        public bool isActive {
+            get { return !_isDisabled; }
+            set
+            {
+                if ( !_isDisabled && value == false ) {
+                    Reset();
+                }
+                _isDisabled = !value;
+            }
+        }
 
-		///The graph this connection belongs to taken from the source node.
-		public Graph graph{
-			get {return sourceNode != null? sourceNode.graph : null;}
-		}
+        ///The connection status
+        public Status status {
+            get { return _status; }
+            set { _status = value; }
+        }
 
-		///----------------------------------------------------------------------------------------------
+        ///The graph this connection belongs to taken from the source node.
+        public Graph graph {
+            get { return sourceNode != null ? sourceNode.graph : null; }
+        }
 
-		//required
-		public Connection(){}
+        ///----------------------------------------------------------------------------------------------
+
+        //required
+        public Connection() { }
 
 
-		///Create a new Connection. Use this for constructor
-		public static Connection Create(Node source, Node target, int sourceIndex = -1, int targetIndex = -1){
-			
-			if (source == null || target == null){
-				Debug.LogError("Can't Create a Connection without providing Source and Target Nodes");
-				return null;
-			}
+        ///Create a new Connection. Use this for constructor
+        public static Connection Create(Node source, Node target, int sourceIndex = -1, int targetIndex = -1) {
 
-			if (source is MissingNode){
-				Debug.LogError("Creating new Connections from a 'MissingNode' is not allowed. Please resolve the MissingNode node first");
-				return null;
-			}
+            if ( source == null || target == null ) {
+                Debug.LogError("Can't Create a Connection without providing Source and Target Nodes");
+                return null;
+            }
 
-			var newConnection = (Connection)System.Activator.CreateInstance(source.outConnectionType);
+            if ( source is MissingNode ) {
+                Debug.LogError("Creating new Connections from a 'MissingNode' is not allowed. Please resolve the MissingNode node first");
+                return null;
+            }
 
-			if (source.graph != null){
-				source.graph.RecordUndo("Create Connection");
-			}
+            var newConnection = (Connection)System.Activator.CreateInstance(source.outConnectionType);
 
-			var resultSourceIndex = newConnection.SetSource(source, sourceIndex);
-			var resultTargetIndex = newConnection.SetTarget(target, targetIndex);
+            if ( source.graph != null ) {
+                source.graph.RecordUndo("Create Connection");
+            }
 
-			newConnection.OnValidate(resultSourceIndex, resultTargetIndex);
-			newConnection.OnCreate(resultSourceIndex, resultTargetIndex);
-			return newConnection;
-		}
+            var resultSourceIndex = newConnection.SetSourceNode(source, sourceIndex);
+            var resultTargetIndex = newConnection.SetTargetNode(target, targetIndex);
 
-		///Duplicate the connection providing a new source and target
-		public Connection Duplicate(Node newSource, Node newTarget){
+            newConnection.OnValidate(resultSourceIndex, resultTargetIndex);
+            newConnection.OnCreate(resultSourceIndex, resultTargetIndex);
+            return newConnection;
+        }
 
-			if (newSource == null || newTarget == null){
-				Debug.LogError("Can't Duplicate a Connection without providing NewSource and NewTarget Nodes");
-				return null;
-			}
-			
-			//deep clone
-			var newConnection = JSONSerializer.Clone<Connection>(this);
+        ///Duplicate the connection providing a new source and target
+        public Connection Duplicate(Node newSource, Node newTarget) {
 
-			if (newSource.graph != null){
-				newSource.graph.RecordUndo("Duplicate Connection");
-			}
+            if ( newSource == null || newTarget == null ) {
+                Debug.LogError("Can't Duplicate a Connection without providing NewSource and NewTarget Nodes");
+                return null;
+            }
 
-			var resultSourceIndex = newConnection.SetSource(newSource);
-			var resultTargetIndex = newConnection.SetTarget(newTarget);
+            //deep clone
+            var newConnection = JSONSerializer.Clone<Connection>(this);
 
-			var assignable = this as ITaskAssignable;
-			if (assignable != null && assignable.task != null){
-				(newConnection as ITaskAssignable).task = assignable.task.Duplicate(newSource.graph);
-			}
+            if ( newSource.graph != null ) {
+                newSource.graph.RecordUndo("Duplicate Connection");
+            }
 
-			newConnection.OnValidate(resultSourceIndex, resultTargetIndex);
-			return newConnection;
-		}
+            var resultSourceIndex = newConnection.SetSourceNode(newSource);
+            var resultTargetIndex = newConnection.SetTargetNode(newTarget);
 
-		///Called once when the connection is created.
-		virtual public void OnCreate(int sourceIndex, int targetIndex){}
-		///Called when the Connection is created, duplicated or otherwise needs validation.
-		virtual public void OnValidate(int sourceIndex, int targetIndex){}
-		///Called when the connection is destroyed (always through graph.RemoveConnection or when a node is removed through graph.RemoveNode)
-		virtual public void OnDestroy(){}
+            var assignable = this as ITaskAssignable;
+            if ( assignable != null && assignable.task != null ) {
+                ( newConnection as ITaskAssignable ).task = assignable.task.Duplicate(newSource.graph);
+            }
 
-		///Sets the source node of the connection
-		public int SetSource(Node newSource, int index = -1){
-			
-			if (sourceNode == newSource){
-				return -1;
-			}
+            newConnection.OnValidate(resultSourceIndex, resultTargetIndex);
+            return newConnection;
+        }
 
-			if (graph != null){
-				graph.RecordUndo("Set Source");
-			}
+        ///Called once when the connection is created.
+        virtual public void OnCreate(int sourceIndex, int targetIndex) { }
+        ///Called when the Connection is created, duplicated or otherwise needs validation.
+        virtual public void OnValidate(int sourceIndex, int targetIndex) { }
+        ///Called when the connection is destroyed (always through graph.RemoveConnection or when a node is removed through graph.RemoveNode)
+        virtual public void OnDestroy() { }
 
-			//relink
-			if (sourceNode != null && sourceNode.outConnections.Contains(this)){
-				var i = sourceNode.outConnections.IndexOf(this);
-				sourceNode.OnChildDisconnected(i);
-				sourceNode.outConnections.Remove(this);
-			}
+        ///Sets the source node of the connection
+        public int SetSourceNode(Node newSource, int index = -1) {
 
-			index = index == -1? newSource.outConnections.Count : index;
-			newSource.outConnections.Insert(index, this);
-			newSource.OnChildConnected(index);
-			sourceNode = newSource;
+            if ( sourceNode == newSource ) {
+                return -1;
+            }
 
-			#if UNITY_EDITOR
-			if (sourceNode != null && targetNode != null){
-				targetNode.TrySortConnectionsByPositionX();
-			}
-			#endif
+            if ( graph != null ) {
+                graph.RecordUndo("Set Source");
+            }
 
-			return index;
-		}
+            //relink
+            if ( sourceNode != null && sourceNode.outConnections.Contains(this) ) {
+                var i = sourceNode.outConnections.IndexOf(this);
+                sourceNode.OnChildDisconnected(i);
+                sourceNode.outConnections.Remove(this);
+            }
 
-		///Sets the target node of the connection
-		public int SetTarget(Node newTarget, int index = -1){
-			
-			if (targetNode == newTarget){
-				return -1;
-			}
+            index = index == -1 ? newSource.outConnections.Count : index;
+            newSource.outConnections.Insert(index, this);
+            newSource.OnChildConnected(index);
+            sourceNode = newSource;
 
-			if (graph != null){
-				graph.RecordUndo("Set Target");
-			}
+#if UNITY_EDITOR
+            if ( sourceNode != null && targetNode != null ) {
+                targetNode.TrySortConnectionsByPositionX();
+            }
+#endif
 
-			//relink
-			if (targetNode != null && targetNode.inConnections.Contains(this)){
-				var i = targetNode.inConnections.IndexOf(this);
-				targetNode.OnParentDisconnected(i);
-				targetNode.inConnections.Remove(this);
-			}
+            return index;
+        }
 
-			index = index == -1? newTarget.inConnections.Count : index;
-			newTarget.inConnections.Insert(index, this);
-			newTarget.OnParentConnected(index);
-			targetNode = newTarget;
+        ///Sets the target node of the connection
+        public int SetTargetNode(Node newTarget, int index = -1) {
 
-			#if UNITY_EDITOR
-			if (sourceNode != null && targetNode != null){
-				targetNode.TrySortConnectionsByPositionX();
-			}
-			#endif
+            if ( targetNode == newTarget ) {
+                return -1;
+            }
 
-			return index;
-		}
+            if ( graph != null ) {
+                graph.RecordUndo("Set Target");
+            }
 
-		//...
-		sealed public override string ToString(){
-			return this.GetType().FriendlyName();
-		}
+            //relink
+            if ( targetNode != null && targetNode.inConnections.Contains(this) ) {
+                var i = targetNode.inConnections.IndexOf(this);
+                targetNode.OnParentDisconnected(i);
+                targetNode.inConnections.Remove(this);
+            }
 
-		///----------------------------------------------------------------------------------------------
+            index = index == -1 ? newTarget.inConnections.Count : index;
+            newTarget.inConnections.Insert(index, this);
+            newTarget.OnParentConnected(index);
+            targetNode = newTarget;
 
-		///Execute the conneciton for the specified agent and blackboard.
-		public Status Execute(Component agent, IBlackboard blackboard){
+#if UNITY_EDITOR
+            if ( sourceNode != null && targetNode != null ) {
+                targetNode.TrySortConnectionsByPositionX();
+            }
+#endif
 
-			if (!isActive){
-				return Status.Optional;
-			}
+            return index;
+        }
 
-			status = targetNode.Execute(agent, blackboard);
-			return status;
-		}
+        //...
+        sealed public override string ToString() {
+            return this.GetType().FriendlyName();
+        }
 
-		///Resets the connection and its targetNode, optionaly recursively
-		public void Reset(bool recursively = true){
+        ///----------------------------------------------------------------------------------------------
 
-			if (status == Status.Resting){
-				return;
-			}
+        ///Execute the conneciton for the specified agent and blackboard.
+        public Status Execute(Component agent, IBlackboard blackboard) {
 
-			status = Status.Resting;
+            if ( !isActive ) {
+                return Status.Optional;
+            }
 
-			if (recursively){
-				targetNode.Reset(recursively);
-			}
-		}
-	}
+            status = targetNode.Execute(agent, blackboard);
+            return status;
+        }
+
+        ///Resets the connection and its targetNode, optionaly recursively
+        public void Reset(bool recursively = true) {
+
+            if ( status == Status.Resting ) {
+                return;
+            }
+
+            status = Status.Resting;
+
+            if ( recursively ) {
+                targetNode.Reset(recursively);
+            }
+        }
+    }
 }

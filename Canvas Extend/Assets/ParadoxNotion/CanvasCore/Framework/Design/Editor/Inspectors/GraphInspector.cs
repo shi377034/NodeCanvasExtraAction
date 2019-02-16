@@ -9,20 +9,22 @@ using UnityEditor;
 using UnityEngine;
 
 
-namespace NodeCanvas.Editor{
+namespace NodeCanvas.Editor
+{
 
     [CustomEditor(typeof(Graph), true)]
-    public class GraphInspector : UnityEditor.Editor {
+    public class GraphInspector : UnityEditor.Editor
+    {
 
-        private Graph graph{
-            get {return target as Graph;}
+        private Graph graph {
+            get { return target as Graph; }
         }
 
-        private string fileExtension{
-            get {return graph.GetType().Name.GetCapitals() ;}
+        private string fileExtension {
+            get { return graph.GetType().Name.GetCapitals(); }
         }
 
-        public override void OnInspectorGUI(){
+        public override void OnInspectorGUI() {
 
             UndoManager.CheckUndo(this, "Graph Inspector");
 
@@ -35,7 +37,7 @@ namespace NodeCanvas.Editor{
 
 
         //name, description, edit button
-        public void ShowBasicGUI(){
+        public void ShowBasicGUI() {
             GUILayout.Space(10);
             graph.category = GUILayout.TextField(graph.category);
             EditorUtils.TextFieldComment(graph.category, "Category...");
@@ -44,55 +46,55 @@ namespace NodeCanvas.Editor{
             EditorUtils.TextFieldComment(graph.comments, "Comments...");
 
             GUI.backgroundColor = Colors.lightBlue;
-            if (GUILayout.Button(string.Format("EDIT {0}", graph.GetType().Name.SplitCamelCase().ToUpper() ))){
+            if ( GUILayout.Button(string.Format("EDIT {0}", graph.GetType().Name.SplitCamelCase().ToUpper())) ) {
                 GraphEditor.OpenWindow(graph);
             }
             GUI.backgroundColor = Color.white;
         }
 
         //List of defined parameters in graph
-        public void ShowDefinedParametersGUI(){
+        public void ShowDefinedParametersGUI() {
 
             var varInfo = new Dictionary<string, System.Type>();
             var occurencies = new Dictionary<string, int>();
             var duplicateTypes = new Dictionary<System.Type, string>();
 
-            foreach (var bbVar in graph.GetDefinedParameters()){
-                
-                if (varInfo.ContainsKey(bbVar.name) && varInfo[bbVar.name] != bbVar.varType){
+            foreach ( var bbVar in graph.GetDefinedParameters() ) {
+
+                if ( varInfo.ContainsKey(bbVar.name) && varInfo[bbVar.name] != bbVar.varType ) {
                     duplicateTypes[bbVar.varType] = bbVar.name;
                     continue;
                 }
 
                 varInfo[bbVar.name] = bbVar.varType;
-                if (!occurencies.ContainsKey(bbVar.name)){
+                if ( !occurencies.ContainsKey(bbVar.name) ) {
                     occurencies[bbVar.name] = 0;
                 }
-                occurencies[bbVar.name] ++;
+                occurencies[bbVar.name]++;
             }
 
             EditorUtils.TitledSeparator("Defined Blackboard Parameters");
 
-            if (varInfo.Count == 0){
+            if ( varInfo.Count == 0 ) {
                 EditorGUILayout.HelpBox("The graph has no defined Blackboard Parameters", MessageType.None);
                 return;
             }
-            
+
             GUILayout.BeginHorizontal();
             GUILayout.BeginVertical(GUILayout.MaxWidth(100), GUILayout.ExpandWidth(true));
             GUI.color = Color.yellow;
             GUILayout.Label("Name");
             GUI.color = Color.white;
-            foreach (var name in varInfo.Keys){
+            foreach ( var name in varInfo.Keys ) {
                 GUILayout.Label(name);
             }
             GUILayout.EndVertical();
 
             GUILayout.BeginVertical(GUILayout.MaxWidth(100), GUILayout.ExpandWidth(true));
-            GUI.color = Color.yellow;            
+            GUI.color = Color.yellow;
             GUILayout.Label("Type");
             GUI.color = Color.white;
-            foreach (var type in varInfo.Values){
+            foreach ( var type in varInfo.Values ) {
                 GUILayout.Label(type.FriendlyName());
             }
             GUILayout.EndVertical();
@@ -101,16 +103,16 @@ namespace NodeCanvas.Editor{
             GUI.color = Color.yellow;
             GUILayout.Label("Occurencies");
             GUI.color = Color.white;
-            foreach (var occ in occurencies.Values){
+            foreach ( var occ in occurencies.Values ) {
                 GUILayout.Label(occ.ToString());
             }
             GUILayout.EndVertical();
             GUILayout.EndHorizontal();
 
-            if (duplicateTypes.Count > 0){
+            if ( duplicateTypes.Count > 0 ) {
                 EditorUtils.Separator();
                 GUILayout.Label("Duplicate Types");
-                foreach (var pair in duplicateTypes){
+                foreach ( var pair in duplicateTypes ) {
                     EditorGUILayout.LabelField(pair.Value, pair.Key.FriendlyName());
                 }
             }

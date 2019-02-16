@@ -3,14 +3,10 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace ParadoxNotion.Serialization.FullSerializer {
-    partial class fsConverterRegistrar {
-        public static Internal.DirectConverters.Gradient_DirectConverter Register_Gradient_DirectConverter;
-    }
-}
-
-namespace ParadoxNotion.Serialization.FullSerializer.Internal.DirectConverters {
-    public class Gradient_DirectConverter : fsDirectConverter<Gradient> {
+namespace ParadoxNotion.Serialization.FullSerializer.Internal.DirectConverters
+{
+    public class Gradient_DirectConverter : fsDirectConverter<Gradient>
+    {
         protected override fsResult DoSerialize(Gradient model, Dictionary<string, fsData> serialized) {
             var result = fsResult.Success;
 

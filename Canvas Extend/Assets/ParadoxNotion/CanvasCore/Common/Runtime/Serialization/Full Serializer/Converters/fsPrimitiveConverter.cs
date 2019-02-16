@@ -1,10 +1,12 @@
 ﻿using System;
 
-namespace ParadoxNotion.Serialization.FullSerializer.Internal {
-    public class fsPrimitiveConverter : fsConverter {
+namespace ParadoxNotion.Serialization.FullSerializer.Internal
+{
+    public class fsPrimitiveConverter : fsConverter
+    {
         public override bool CanProcess(Type type) {
             return
-                type.Resolve().IsPrimitive ||
+                type.IsPrimitive ||
                 type == typeof(string) ||
                 type == typeof(decimal);
         }
@@ -42,25 +44,25 @@ namespace ParadoxNotion.Serialization.FullSerializer.Internal {
         public override fsResult TrySerialize(object instance, out fsData serialized, Type storageType) {
             var instanceType = instance.GetType();
 
-            if (Serializer.Config.Serialize64BitIntegerAsString && (instanceType == typeof(Int64) || instanceType == typeof(UInt64))) {
+            if ( Serializer.Config.Serialize64BitIntegerAsString && ( instanceType == typeof(Int64) || instanceType == typeof(UInt64) ) ) {
                 serialized = new fsData((string)Convert.ChangeType(instance, typeof(string)));
                 return fsResult.Success;
             }
 
-            if (UseBool(instanceType)) {
+            if ( UseBool(instanceType) ) {
                 serialized = new fsData((bool)instance);
                 return fsResult.Success;
             }
 
-            if (UseInt64(instanceType)) {
+            if ( UseInt64(instanceType) ) {
                 serialized = new fsData((Int64)Convert.ChangeType(instance, typeof(Int64)));
                 return fsResult.Success;
             }
 
-            if (UseDouble(instanceType)) {
+            if ( UseDouble(instanceType) ) {
                 // Casting from float to double introduces floating point jitter, ie, 0.1 becomes 0.100000001490116.
                 // Casting to decimal as an intermediate step removes the jitter. Not sure why.
-                if (instance.GetType() == typeof(float) &&
+                if ( instance.GetType() == typeof(float) &&
                     // Decimal can't store float.MinValue/float.MaxValue/float.PositiveInfinity/float.NegativeInfinity/float.NaN - an exception gets thrown in that scenario.
                     (float)instance != float.MinValue &&
                     (float)instance != float.MaxValue &&
@@ -75,7 +77,7 @@ namespace ParadoxNotion.Serialization.FullSerializer.Internal {
                 return fsResult.Success;
             }
 
-            if (UseString(instanceType)) {
+            if ( UseString(instanceType) ) {
                 serialized = new fsData((string)Convert.ChangeType(instance, typeof(string)));
                 return fsResult.Success;
             }
@@ -87,41 +89,38 @@ namespace ParadoxNotion.Serialization.FullSerializer.Internal {
         public override fsResult TryDeserialize(fsData storage, ref object instance, Type storageType) {
             var result = fsResult.Success;
 
-            if (UseBool(storageType)) {
-                if ((result += CheckType(storage, fsDataType.Boolean)).Succeeded) {
+            if ( UseBool(storageType) ) {
+                if ( ( result += CheckType(storage, fsDataType.Boolean) ).Succeeded ) {
                     instance = storage.AsBool;
                 }
                 return result;
             }
 
-            if (UseDouble(storageType) || UseInt64(storageType)) {
-                if (storage.IsDouble) {
-                    if (storageType == typeof(float)){
+            if ( UseDouble(storageType) || UseInt64(storageType) ) {
+                if ( storage.IsDouble ) {
+                    if ( storageType == typeof(float) ) {
                         instance = (float)storage.AsDouble;
                     } else {
                         instance = Convert.ChangeType(storage.AsDouble, storageType);
                     }
-                }
-                else if (storage.IsInt64) {
-                    if (storageType == typeof(int)){
+                } else if ( storage.IsInt64 ) {
+                    if ( storageType == typeof(int) ) {
                         instance = (int)storage.AsInt64;
                     } else {
                         instance = Convert.ChangeType(storage.AsInt64, storageType);
                     }
-                }
-                else if (Serializer.Config.Serialize64BitIntegerAsString && storage.IsString &&
-                    (storageType == typeof(Int64) || storageType == typeof(UInt64))) {
+                } else if ( Serializer.Config.Serialize64BitIntegerAsString && storage.IsString &&
+                      ( storageType == typeof(Int64) || storageType == typeof(UInt64) ) ) {
                     instance = Convert.ChangeType(storage.AsString, storageType);
-                }
-                else {
+                } else {
                     return fsResult.Fail(GetType().Name + " expected number but got " + storage.Type + " in " + storage);
                 }
                 return fsResult.Success;
             }
 
-            if (UseString(storageType)) {
-                if ((result += CheckType(storage, fsDataType.String)).Succeeded) {
-                    if (storageType == typeof(char)){
+            if ( UseString(storageType) ) {
+                if ( ( result += CheckType(storage, fsDataType.String) ).Succeeded ) {
+                    if ( storageType == typeof(char) ) {
                         instance = storage.AsString[0];
                     } else {
                         instance = storage.AsString;

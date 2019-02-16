@@ -6,130 +6,133 @@ using ParadoxNotion.Design;
 using UnityEngine;
 
 
-namespace NodeCanvas.BehaviourTrees{
+namespace NodeCanvas.BehaviourTrees
+{
 
-	[Name("SubTree")]
-	[Category("Nested")]
-	[Description("SubTree Node can be assigned an entire Sub BehaviorTree. The root node of that behaviour will be considered child node of this node and will return whatever it returns.\nThe target SubTree can also be set by using a Blackboard variable as normal.")]
-	[Icon("BT")]
-	public class SubTree : BTNode, IGraphAssignable{
+    [Name("SubTree")]
+    [Category("Nested")]
+    [Description("SubTree Node can be assigned an entire Sub BehaviorTree. The root node of that behaviour will be considered child node of this node and will return whatever it returns.\nThe target SubTree can also be set by using a Blackboard variable as normal.")]
+    [Icon("BT")]
+    public class SubTree : BTNode, IGraphAssignable
+    {
 
-		[SerializeField]
-		private BBParameter<BehaviourTree> _subTree = null;
-		private Dictionary<BehaviourTree, BehaviourTree> instances = new Dictionary<BehaviourTree, BehaviourTree>();
-		private BehaviourTree currentInstance = null;
+        [SerializeField]
+        private BBParameter<BehaviourTree> _subTree = null;
 
-		public override string name{
-			get {return base.name.ToUpper();}
-		}
+        private Dictionary<BehaviourTree, BehaviourTree> instances = new Dictionary<BehaviourTree, BehaviourTree>();
+        private BehaviourTree currentInstance = null;
 
-		public BehaviourTree subTree{
-			get {return _subTree.value;}
-			set { _subTree.value = value;}
-		}
+        public override string name {
+            get { return base.name.ToUpper(); }
+        }
 
-		Graph IGraphAssignable.nestedGraph{
-			get {return subTree;}
-			set {subTree = (BehaviourTree)value;}
-		}
+        public BehaviourTree subTree {
+            get { return _subTree.value; }
+            set { _subTree.value = value; }
+        }
 
-		Graph[] IGraphAssignable.GetInstances(){ return instances.Values.ToArray(); }
+        Graph IGraphAssignable.nestedGraph {
+            get { return subTree; }
+            set { subTree = (BehaviourTree)value; }
+        }
 
-		///----------------------------------------------------------------------------------------------
+        Graph[] IGraphAssignable.GetInstances() { return instances.Values.ToArray(); }
 
-		protected override Status OnExecute(Component agent, IBlackboard blackboard){
+        ///----------------------------------------------------------------------------------------------
 
-			if (subTree == null || subTree.primeNode == null){
-				return Status.Optional;
-			}
+        protected override Status OnExecute(Component agent, IBlackboard blackboard) {
 
-			if (status == Status.Resting || currentInstance.isPaused){
-				currentInstance = CheckInstance();
-				currentInstance.StartGraph(agent, blackboard, false);
-			}
+            if ( subTree == null || subTree.primeNode == null ) {
+                return Status.Optional;
+            }
 
-			currentInstance.UpdateGraph();
-			return currentInstance.rootStatus;
-		}
+            if ( status == Status.Resting || currentInstance.isPaused ) {
+                currentInstance = CheckInstance();
+                currentInstance.StartGraph(agent, blackboard, false);
+            }
 
-		protected override void OnReset(){
-			if (currentInstance != null){
-				currentInstance.Stop();
-			}
-		}
+            currentInstance.UpdateGraph();
+            return currentInstance.rootStatus;
+        }
 
-		public override void OnGraphPaused(){
-			if (currentInstance != null){
-				currentInstance.Pause();
-			}
-		}
+        protected override void OnReset() {
+            if ( currentInstance != null ) {
+                currentInstance.Stop();
+            }
+        }
 
-		public override void OnGraphStoped(){
-			if (currentInstance != null){
-				currentInstance.Stop();
-			}
-		}
+        public override void OnGraphPaused() {
+            if ( currentInstance != null ) {
+                currentInstance.Pause();
+            }
+        }
 
-		BehaviourTree CheckInstance(){
+        public override void OnGraphStoped() {
+            if ( currentInstance != null ) {
+                currentInstance.Stop();
+            }
+        }
 
-			if (subTree == currentInstance){
-				return currentInstance;
-			}
+        BehaviourTree CheckInstance() {
 
-			BehaviourTree instance = null;
-			if (!instances.TryGetValue(subTree, out instance)){
-				instance = Graph.Clone<BehaviourTree>(subTree);
-				instances[subTree] = instance;
-			}
+            if ( subTree == currentInstance ) {
+                return currentInstance;
+            }
 
-			subTree = instance;
-		    return instance;
-		}
+            BehaviourTree instance = null;
+            if ( !instances.TryGetValue(subTree, out instance) ) {
+                instance = Graph.Clone<BehaviourTree>(subTree);
+                instances[subTree] = instance;
+            }
 
-		///----------------------------------------------------------------------------------------------
-		///---------------------------------------UNITY EDITOR-------------------------------------------
-		#if UNITY_EDITOR
-		
-		protected override void OnNodeGUI(){
-			GUILayout.Label(string.Format("SubTree\n{0}", _subTree) );
-			if (subTree == null){
-				if (!Application.isPlaying && GUILayout.Button("CREATE NEW")){
-					Node.CreateNested<BehaviourTree>(this);
-				}
-			}
-		}
+            subTree = instance;
+            return instance;
+        }
 
-		protected override void OnNodeInspectorGUI(){
+        ///----------------------------------------------------------------------------------------------
+        ///---------------------------------------UNITY EDITOR-------------------------------------------
+#if UNITY_EDITOR
 
-		    NodeCanvas.Editor.BBParameterEditor.ParameterField("Behaviour SubTree", _subTree);
+        protected override void OnNodeGUI() {
+            GUILayout.Label(string.Format("SubTree\n{0}", _subTree));
+            if ( subTree == null ) {
+                if ( !Application.isPlaying && GUILayout.Button("CREATE NEW") ) {
+                    Node.CreateNested<BehaviourTree>(this);
+                }
+            }
+        }
 
-	    	if (subTree == this.graph){
-		    	Debug.LogWarning("You can't have a Graph nested to iteself! Please select another");
-		    	subTree = null;
-		    }
+        protected override void OnNodeInspectorGUI() {
 
-		    if (subTree != null){
+            NodeCanvas.Editor.BBParameterEditor.ParameterField("Behaviour SubTree", _subTree);
 
-		    	var defParams = subTree.GetDefinedParameters();
-		    	if (defParams.Length != 0){
-			    	EditorUtils.TitledSeparator("Defined SubTree Parameters");
-			    	GUI.color = Color.yellow;
-			    	UnityEditor.EditorGUILayout.LabelField("Name", "Type");
-					GUI.color = Color.white;
-			    	var added = new List<string>();
-			    	foreach(var bbVar in defParams){
-			    		if (!added.Contains(bbVar.name)){
-				    		UnityEditor.EditorGUILayout.LabelField(bbVar.name, bbVar.varType.FriendlyName());
-				    		added.Add(bbVar.name);
-				    	}
-			    	}
-			    	if (GUILayout.Button("Check/Create Blackboard Variables")){
-			    		subTree.PromoteDefinedParametersToVariables(graphBlackboard);
-			    	}
-			    }
-		    }
-		}
+            if ( subTree == this.graph ) {
+                Debug.LogWarning("You can't have a Graph nested to iteself! Please select another");
+                subTree = null;
+            }
 
-		#endif
-	}
+            if ( subTree != null ) {
+
+                var defParams = subTree.GetDefinedParameters();
+                if ( defParams.Length != 0 ) {
+                    EditorUtils.TitledSeparator("Defined SubTree Parameters");
+                    GUI.color = Color.yellow;
+                    UnityEditor.EditorGUILayout.LabelField("Name", "Type");
+                    GUI.color = Color.white;
+                    var added = new List<string>();
+                    foreach ( var bbVar in defParams ) {
+                        if ( !added.Contains(bbVar.name) ) {
+                            UnityEditor.EditorGUILayout.LabelField(bbVar.name, bbVar.varType.FriendlyName());
+                            added.Add(bbVar.name);
+                        }
+                    }
+                    if ( GUILayout.Button("Check/Create Blackboard Variables") ) {
+                        subTree.PromoteDefinedParametersToVariables(graphBlackboard);
+                    }
+                }
+            }
+        }
+
+#endif
+    }
 }

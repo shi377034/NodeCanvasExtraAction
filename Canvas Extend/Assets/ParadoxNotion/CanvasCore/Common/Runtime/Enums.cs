@@ -1,4 +1,5 @@
-﻿namespace ParadoxNotion{
+﻿namespace ParadoxNotion
+{
 
     /// <summary>
     /// Enumeration for comparisons
@@ -28,69 +29,69 @@
     /// Enumeration for mouse button keys
     /// </summary>
 	public enum ButtonKeys
-	{
-		Left = 0,
-		Right = 1,
-		Middle = 2
-	}
+    {
+        Left = 0,
+        Right = 1,
+        Middle = 2
+    }
 
     /// <summary>
     /// Enumeration for press types for inputs
     /// </summary>
 	public enum PressTypes
-	{
-		Down,
-		Up,
-		Pressed
-	}
+    {
+        Down,
+        Up,
+        Pressed
+    }
 
     /// <summary>
     /// Enumeration for mouse press
     /// </summary>
 	public enum MouseClickEvent
-	{
-		MouseDown = 0,
-		MouseUp = 1
-	}
+    {
+        MouseDown = 0,
+        MouseUp = 1
+    }
 
     /// <summary>
     /// Enumeration for trigger unity events
     /// </summary>
 	public enum TriggerTypes
-	{
-		TriggerEnter = 0,
-		TriggerExit  = 1,
-		TriggerStay  = 2
-	}
+    {
+        TriggerEnter = 0,
+        TriggerExit = 1,
+        TriggerStay = 2
+    }
 
     /// <summary>
     /// Enumeration for collision unity events
     /// </summary>
 	public enum CollisionTypes
-	{
-		CollisionEnter = 0,
-		CollisionExit  = 1,
-		CollisionStay  = 2
-	}
+    {
+        CollisionEnter = 0,
+        CollisionExit = 1,
+        CollisionStay = 2
+    }
 
     /// <summary>
     /// Enumeration for mouse unity events
     /// </summary>
 	public enum MouseInteractionTypes
-	{
-		MouseEnter = 0,
-		MouseExit  = 1,
-		MouseOver  = 2
-	}
+    {
+        MouseEnter = 0,
+        MouseExit = 1,
+        MouseOver = 2
+    }
 
     /// <summary>
     /// Enumeration for boolean status result
     /// </summary>
 	public enum CompactStatus
-	{
-		Failure = 0,
-		Success = 1
-	}
+    {
+        Failure = 0,
+        Success = 1
+    }
 
     /// <summary>
     /// Enumeration for Animation playing direction

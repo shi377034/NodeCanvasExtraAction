@@ -10,314 +10,315 @@ using ParadoxNotion.Design;
 using UnityEngine;
 using ParadoxNotion.Serialization;
 
-namespace NodeCanvas.Framework{
+namespace NodeCanvas.Framework
+{
 
-	///ActionList is an ActionTask itself that holds multilple ActionTasks which can be executed either in parallel or in sequence.
-	[DoNotList]
-	public class ActionList : ActionTask, ISubTasksContainer{
+    ///ActionList is an ActionTask itself that holds multilple ActionTasks which can be executed either in parallel or in sequence.
+    [DoNotList]
+    public class ActionList : ActionTask, ISubTasksContainer
+    {
 
-		public enum ActionsExecutionMode
-		{
-			ActionsRunInSequence,
-			ActionsRunInParallel
-		}
-		
-		public ActionsExecutionMode executionMode;
-		public List<ActionTask> actions = new List<ActionTask>();
-		
-		private List<ActionTask> initialActiveActions;
+        public enum ActionsExecutionMode
+        {
+            ActionsRunInSequence,
+            ActionsRunInParallel
+        }
 
-		private int currentActionIndex;
-		private readonly List<int> finishedIndeces = new List<int>();
+        public ActionsExecutionMode executionMode;
+        public List<ActionTask> actions = new List<ActionTask>();
 
-		protected override string info{
-			get
-			{
-				if (actions.Count == 0){
-					return "No Actions";
-				}
+        private List<ActionTask> initialActiveActions;
 
-				var finalText = actions.Count > 1? (string.Format("<b>({0})</b>\n", executionMode == ActionsExecutionMode.ActionsRunInSequence? "In Sequence" : "In Parallel" )) : string.Empty;
-				for (var i= 0; i < actions.Count; i++){
+        private int currentActionIndex;
+        private readonly List<int> finishedIndeces = new List<int>();
 
-					var action = actions[i];
-					if (action == null){
-						continue;
-					}
+        protected override string info {
+            get
+            {
+                if ( actions.Count == 0 ) {
+                    return "No Actions";
+                }
 
-					if (action.isActive || (initialActiveActions != null && initialActiveActions.Contains(action)) ){
-						var prefix = action.isPaused? "<b>||</b> " : action.isRunning? "► " : "▪";
-						finalText += prefix + action.summaryInfo + (i == actions.Count -1? "" : "\n");
-					}
-				}
+                var finalText = actions.Count > 1 ? ( string.Format("<b>({0})</b>\n", executionMode == ActionsExecutionMode.ActionsRunInSequence ? "In Sequence" : "In Parallel") ) : string.Empty;
+                for ( var i = 0; i < actions.Count; i++ ) {
 
-				return finalText;	
-			}
-		}
+                    var action = actions[i];
+                    if ( action == null ) {
+                        continue;
+                    }
 
-		Task[] ISubTasksContainer.GetSubTasks(){
+                    if ( action.isActive || ( initialActiveActions != null && initialActiveActions.Contains(action) ) ) {
+                        var prefix = action.isPaused ? "<b>||</b> " : action.isRunning ? "► " : "▪";
+                        finalText += prefix + action.summaryInfo + ( i == actions.Count - 1 ? "" : "\n" );
+                    }
+                }
+
+                return finalText;
+            }
+        }
+
+        Task[] ISubTasksContainer.GetSubTasks() {
             return actions.ToArray();
         }
 
-		///ActionList overrides to duplicate listed actions correctly
-		public override Task Duplicate(ITaskSystem newOwnerSystem){
-			var newList = (ActionList)base.Duplicate(newOwnerSystem);
-			newList.actions.Clear();
-			foreach (var action in actions){
-				newList.AddAction( (ActionTask)action.Duplicate(newOwnerSystem) );
-			}
+        ///ActionList overrides to duplicate listed actions correctly
+        public override Task Duplicate(ITaskSystem newOwnerSystem) {
+            var newList = (ActionList)base.Duplicate(newOwnerSystem);
+            newList.actions.Clear();
+            foreach ( var action in actions ) {
+                newList.AddAction((ActionTask)action.Duplicate(newOwnerSystem));
+            }
 
-			return newList;
-		}
+            return newList;
+        }
 
-		protected override string OnInit(){
-			if (initialActiveActions == null){
-				initialActiveActions = actions.Where(a => a.isActive).ToList();
-			}
-			return null;
-		}
+        protected override string OnInit() {
+            if ( initialActiveActions == null ) {
+                initialActiveActions = actions.Where(a => a.isActive).ToList();
+            }
+            return null;
+        }
 
-		protected override void OnExecute(){
-			finishedIndeces.Clear();
-			currentActionIndex = 0;
-		}
+        protected override void OnExecute() {
+            finishedIndeces.Clear();
+            currentActionIndex = 0;
+        }
 
-		protected override void OnUpdate(){
+        protected override void OnUpdate() {
 
-			if (actions.Count == 0){
-				EndAction();
-				return;
-			}
+            if ( actions.Count == 0 ) {
+                EndAction();
+                return;
+            }
 
-			switch(executionMode)
-			{
-				case(ActionsExecutionMode.ActionsRunInParallel):
-				{
-					for (var i = 0; i < actions.Count; i++){
-							
-						if (finishedIndeces.Contains(i)){
-							continue;
-						}
+            switch ( executionMode ) {
+                case ( ActionsExecutionMode.ActionsRunInParallel ): {
+                        for ( var i = 0; i < actions.Count; i++ ) {
 
-						if (!actions[i].isActive){
-							finishedIndeces.Add(i);
-							continue;
-						}
+                            if ( finishedIndeces.Contains(i) ) {
+                                continue;
+                            }
 
-						var status = actions[i].ExecuteAction(agent, blackboard);
-						if (status == Status.Failure){
-							EndAction(false);
-							return;
-						}
+                            if ( !actions[i].isActive ) {
+                                finishedIndeces.Add(i);
+                                continue;
+                            }
 
-						if (status == Status.Success){
-							finishedIndeces.Add(i);
-						}
-					}
+                            var status = actions[i].ExecuteAction(agent, blackboard);
+                            if ( status == Status.Failure ) {
+                                EndAction(false);
+                                return;
+                            }
 
-					if (finishedIndeces.Count == actions.Count){
-						EndAction(true);
-					}
-				}
-				break;
+                            if ( status == Status.Success ) {
+                                finishedIndeces.Add(i);
+                            }
+                        }
 
-				case(ActionsExecutionMode.ActionsRunInSequence):
-				{
-					for (var i = currentActionIndex; i < actions.Count; i++){
-						
-						if ( !actions[i].isActive ){
-							continue;
-						}
+                        if ( finishedIndeces.Count == actions.Count ) {
+                            EndAction(true);
+                        }
+                    }
+                    break;
 
-						var status = actions[i].ExecuteAction(agent, blackboard);
-						if (status == Status.Failure){
-							EndAction(false);
-							return;
-						}
+                case ( ActionsExecutionMode.ActionsRunInSequence ): {
+                        for ( var i = currentActionIndex; i < actions.Count; i++ ) {
 
-						if (status == Status.Running){
-							currentActionIndex = i;
-							return;
-						}
-					}
+                            if ( !actions[i].isActive ) {
+                                continue;
+                            }
 
-					EndAction(true);
-				}
-				break;
-			}
-		}
+                            var status = actions[i].ExecuteAction(agent, blackboard);
+                            if ( status == Status.Failure ) {
+                                EndAction(false);
+                                return;
+                            }
 
-		protected override void OnStop(){
-			for (var i = 0; i < actions.Count; i++){
-				if (actions[i].isActive){
-					actions[i].EndAction(null);
-				}
-			}
-		}
+                            if ( status == Status.Running ) {
+                                currentActionIndex = i;
+                                return;
+                            }
+                        }
 
-		protected override void OnPause(){
-			for (var i = 0; i < actions.Count; i++){
-				if (actions[i].isActive){
-					actions[i].PauseAction();			
-				}
-			}
-		}
+                        EndAction(true);
+                    }
+                    break;
+            }
+        }
 
-		public override void OnDrawGizmos(){
-			for (var i = 0; i < actions.Count; i++){
-				if (actions[i].isActive){
-					actions[i].OnDrawGizmos();			
-				}
-			}
-		}
+        protected override void OnStop() {
+            for ( var i = 0; i < actions.Count; i++ ) {
+                if ( actions[i].isActive ) {
+                    actions[i].EndAction(null);
+                }
+            }
+        }
 
-		public override void OnDrawGizmosSelected(){
-			for (var i = 0; i < actions.Count; i++){
-				if (actions[i].isActive){
-					actions[i].OnDrawGizmosSelected();
-				}
-			}
-		}
+        protected override void OnPause() {
+            for ( var i = 0; i < actions.Count; i++ ) {
+                if ( actions[i].isActive ) {
+                    actions[i].PauseAction();
+                }
+            }
+        }
 
-		public void AddAction(ActionTask action){
+        public override void OnDrawGizmos() {
+            for ( var i = 0; i < actions.Count; i++ ) {
+                if ( actions[i].isActive ) {
+                    actions[i].OnDrawGizmos();
+                }
+            }
+        }
 
-			if (action is ActionList){
-				Debug.LogWarning("Adding an ActionList within another ActionList is not allowed for clarity");
-				return;
-			}
+        public override void OnDrawGizmosSelected() {
+            for ( var i = 0; i < actions.Count; i++ ) {
+                if ( actions[i].isActive ) {
+                    actions[i].OnDrawGizmosSelected();
+                }
+            }
+        }
 
-			#if UNITY_EDITOR
-			if (!Application.isPlaying){
-				Undo.RecordObject(ownerSystem.contextObject, "List Add Task");
-				currentViewAction = action;
-			}
-			#endif
-			
-			actions.Add(action);
-			action.SetOwnerSystem(this.ownerSystem);
-			// action.isActive = true;
-		}
+        public void AddAction(ActionTask action) {
+
+            if ( action is ActionList ) {
+                foreach ( var subAction in ( action as ActionList ).actions ) {
+                    AddAction(subAction);
+                }
+                return;
+            }
+
+#if UNITY_EDITOR
+            if ( !Application.isPlaying ) {
+                Undo.RecordObject(ownerSystem.contextObject, "List Add Task");
+                currentViewAction = action;
+            }
+#endif
+
+            actions.Add(action);
+            action.SetOwnerSystem(this.ownerSystem);
+            // action.isActive = true;
+        }
 
 
-		///----------------------------------------------------------------------------------------------
-		///---------------------------------------UNITY EDITOR-------------------------------------------
-		#if UNITY_EDITOR
-		
-		private ActionTask currentViewAction;
+        ///----------------------------------------------------------------------------------------------
+        ///---------------------------------------UNITY EDITOR-------------------------------------------
+#if UNITY_EDITOR
 
-		//...
-		protected override void OnTaskInspectorGUI(){
-			ShowListGUI();
-			ShowNestedActionsGUI();
-		}
+        private ActionTask currentViewAction;
 
-		///Show the sub-tasks list
-		public void ShowListGUI(){
+        //...
+        protected override void OnTaskInspectorGUI() {
+            ShowListGUI();
+            ShowNestedActionsGUI();
+        }
 
-			if (ownerSystem == null){
-				GUILayout.Label("Owner System is null!");
-				return;
-			}
+        ///Show the sub-tasks list
+        public void ShowListGUI() {
 
-			TaskEditor.ShowCreateTaskSelectionButton<ActionTask>(ownerSystem, AddAction);
+            if ( ownerSystem == null ) {
+                GUILayout.Label("Owner System is null!");
+                return;
+            }
 
-			ValidateList();
+            TaskEditor.ShowCreateTaskSelectionButton<ActionTask>(ownerSystem, AddAction);
 
-			if (actions.Count == 0){
-				EditorGUILayout.HelpBox("No Actions", MessageType.None);
-				return;
-			}
+            ValidateList();
 
-			if (actions.Count == 1){
-				return;
-			}
+            if ( actions.Count == 0 ) {
+                EditorGUILayout.HelpBox("No Actions", MessageType.None);
+                return;
+            }
 
-			//show the actions
-			EditorUtils.ReorderableList(actions, (i, picked)=>
-			{
-				var action = actions[i];
-				GUI.color = Color.white.WithAlpha( action == currentViewAction? 0.75f : 0.25f);
-				EditorGUILayout.BeginHorizontal("box");
+            if ( actions.Count == 1 ) {
+                return;
+            }
 
-				GUI.color = Color.white.WithAlpha( action.isActive? 0.8f : 0.25f );
-				GUI.enabled = !Application.isPlaying;
-				action.isActive = EditorGUILayout.Toggle(action.isActive, GUILayout.Width(18));
-				GUI.enabled = true;
+            //show the actions
+            EditorUtils.ReorderableList(actions, (i, picked) =>
+            {
+                var action = actions[i];
+                GUI.color = Color.white.WithAlpha(action == currentViewAction ? 0.75f : 0.25f);
+                EditorGUILayout.BeginHorizontal("box");
 
-				GUILayout.Label( (action.isPaused? "<b>||</b> " : action.isRunning? "► " : "") + action.summaryInfo, GUILayout.MinWidth(0), GUILayout.ExpandWidth(true));
+                GUI.color = Color.white.WithAlpha(action.isActive ? 0.8f : 0.25f);
+                GUI.enabled = !Application.isPlaying;
+                action.isActive = EditorGUILayout.Toggle(action.isActive, GUILayout.Width(18));
+                GUI.enabled = true;
 
-				if (!Application.isPlaying && GUILayout.Button("X", GUILayout.Width(20))){
-					Undo.RecordObject(ownerSystem.contextObject, "List Remove Task");
-					actions.RemoveAt(i);
-				}
+                GUILayout.Label(( action.isPaused ? "<b>||</b> " : action.isRunning ? "► " : "" ) + action.summaryInfo, GUILayout.MinWidth(0), GUILayout.ExpandWidth(true));
 
-				EditorGUILayout.EndHorizontal();
-				
-				var lastRect = GUILayoutUtility.GetLastRect();
-				EditorGUIUtility.AddCursorRect(lastRect, MouseCursor.Link);
-				if (Event.current.type == EventType.MouseDown && lastRect.Contains(Event.current.mousePosition)){
-					currentViewAction = action == currentViewAction? null : action;
-					Event.current.Use();
-				}
+                if ( !Application.isPlaying && GUILayout.Button("X", GUILayout.Width(20)) ) {
+                    Undo.RecordObject(ownerSystem.contextObject, "List Remove Task");
+                    actions.RemoveAt(i);
+                }
 
-				GUI.color = Color.white;
-			});
+                EditorGUILayout.EndHorizontal();
 
-			executionMode = (ActionsExecutionMode)EditorGUILayout.EnumPopup(executionMode);
-		}
+                var lastRect = GUILayoutUtility.GetLastRect();
+                EditorGUIUtility.AddCursorRect(lastRect, MouseCursor.Link);
+                if ( Event.current.type == EventType.MouseDown && lastRect.Contains(Event.current.mousePosition) ) {
+                    currentViewAction = action == currentViewAction ? null : action;
+                    Event.current.Use();
+                }
 
-		///Show currently selected task inspector
-		public void ShowNestedActionsGUI(){
+                GUI.color = Color.white;
+            });
 
-			if (actions.Count == 1){
-				currentViewAction = actions[0];
-			}
+            executionMode = (ActionsExecutionMode)EditorGUILayout.EnumPopup(executionMode);
+        }
 
-			if (currentViewAction != null){
-				EditorUtils.Separator();
-				TaskEditor.TaskFieldSingle(currentViewAction, (a)=>
-				{
-					if (a == null){
-						var i = actions.IndexOf(currentViewAction);
-						actions.RemoveAt(i);
-					}
-					currentViewAction = (ActionTask)a;
-				});
-			}
-		}
+        ///Show currently selected task inspector
+        public void ShowNestedActionsGUI() {
 
-		//Validate possible null tasks
-		void ValidateList(){
-			for (var i = 0; i < actions.Count; i++){
-				if (actions[i] == null){
-					actions.RemoveAt(i);
-				}
-			}
-		}
+            if ( actions.Count == 1 ) {
+                currentViewAction = actions[0];
+            }
 
-		[ContextMenu("Save List Preset")]
-		void DoSavePreset(){
-			var path = EditorUtility.SaveFilePanelInProject ("Save Preset", "", "actionList", "");
-            if (!string.IsNullOrEmpty(path)){
-                System.IO.File.WriteAllText( path, JSONSerializer.Serialize(typeof(ActionList), this, true) ); //true for pretyJson
+            if ( currentViewAction != null ) {
+                EditorUtils.Separator();
+                TaskEditor.TaskFieldSingle(currentViewAction, (a) =>
+                {
+                    if ( a == null ) {
+                        var i = actions.IndexOf(currentViewAction);
+                        actions.RemoveAt(i);
+                    }
+                    currentViewAction = (ActionTask)a;
+                });
+            }
+        }
+
+        //Validate possible null tasks
+        void ValidateList() {
+            for ( var i = 0; i < actions.Count; i++ ) {
+                if ( actions[i] == null ) {
+                    actions.RemoveAt(i);
+                }
+            }
+        }
+
+        [ContextMenu("Save List Preset")]
+        void DoSavePreset() {
+            var path = EditorUtility.SaveFilePanelInProject("Save Preset", "", "actionList", "");
+            if ( !string.IsNullOrEmpty(path) ) {
+                System.IO.File.WriteAllText(path, JSONSerializer.Serialize(typeof(ActionList), this, true)); //true for pretyJson
                 AssetDatabase.Refresh();
-            }				
-		}
+            }
+        }
 
-		[ContextMenu("Load List Preset")]
-		void DoLoadPreset(){
+        [ContextMenu("Load List Preset")]
+        void DoLoadPreset() {
             var path = EditorUtility.OpenFilePanel("Load Preset", "Assets", "actionList");
-            if (!string.IsNullOrEmpty(path)){
+            if ( !string.IsNullOrEmpty(path) ) {
                 var json = System.IO.File.ReadAllText(path);
                 var list = JSONSerializer.Deserialize<ActionList>(json);
                 this.actions = list.actions;
                 this.executionMode = list.executionMode;
                 this.currentViewAction = null;
-                foreach(var a in actions){
-                	a.SetOwnerSystem(this.ownerSystem);
+                foreach ( var a in actions ) {
+                    a.SetOwnerSystem(this.ownerSystem);
                 }
-            }				
-		}
+            }
+        }
 
 #endif
     }

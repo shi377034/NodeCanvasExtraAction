@@ -3,14 +3,10 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace ParadoxNotion.Serialization.FullSerializer {
-    partial class fsConverterRegistrar {
-        public static Internal.DirectConverters.LayerMask_DirectConverter Register_LayerMask_DirectConverter;
-    }
-}
-
-namespace ParadoxNotion.Serialization.FullSerializer.Internal.DirectConverters {
-    public class LayerMask_DirectConverter : fsDirectConverter<LayerMask> {
+namespace ParadoxNotion.Serialization.FullSerializer.Internal.DirectConverters
+{
+    public class LayerMask_DirectConverter : fsDirectConverter<LayerMask>
+    {
         protected override fsResult DoSerialize(LayerMask model, Dictionary<string, fsData> serialized) {
             var result = fsResult.Success;
 

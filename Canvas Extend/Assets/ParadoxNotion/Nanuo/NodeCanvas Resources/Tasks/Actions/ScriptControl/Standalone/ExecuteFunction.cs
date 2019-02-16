@@ -58,7 +58,7 @@ namespace NodeCanvas.Tasks.Actions{
 					}
 				}
 
-				var mInfo = targetMethod.IsStatic? targetMethod.RTReflectedType().FriendlyName() : target.ToString();
+				var mInfo = targetMethod.IsStatic? targetMethod.RTReflectedOrDeclaredType().FriendlyName() : target.ToString();
 				return string.Format("{0}{1}.{2}({3})", returnInfo, mInfo, targetMethod.Name, paramInfo );
 			}
 		}
@@ -174,7 +174,7 @@ namespace NodeCanvas.Tasks.Actions{
 			if (m != null){
                 if (!targetMethod.IsStatic) NodeCanvas.Editor.BBParameterEditor.ParameterField("Instance", target, true);
                 GUILayout.BeginVertical("box");
-				UnityEditor.EditorGUILayout.LabelField("Type", targetMethod.RTReflectedType().FriendlyName());
+				UnityEditor.EditorGUILayout.LabelField("Type", targetMethod.RTReflectedOrDeclaredType().FriendlyName());
 				UnityEditor.EditorGUILayout.LabelField("Method", m.Name);
 				UnityEditor.EditorGUILayout.LabelField("Returns", m.ReturnType.FriendlyName());
 

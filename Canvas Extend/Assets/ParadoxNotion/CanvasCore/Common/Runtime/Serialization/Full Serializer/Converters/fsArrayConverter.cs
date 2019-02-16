@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections;
 
-namespace ParadoxNotion.Serialization.FullSerializer.Internal {
-    public class fsArrayConverter : fsConverter {
+namespace ParadoxNotion.Serialization.FullSerializer.Internal
+{
+    public class fsArrayConverter : fsConverter
+    {
         public override bool CanProcess(Type type) {
             return type.IsArray;
         }
@@ -27,14 +29,14 @@ namespace ParadoxNotion.Serialization.FullSerializer.Internal {
             serialized = fsData.CreateList(arr.Count);
             var serializedList = serialized.AsList;
 
-            for (int i = 0; i < arr.Count; ++i) {
+            for ( int i = 0; i < arr.Count; ++i ) {
                 object item = arr[i];
 
                 fsData serializedItem;
 
                 var itemResult = Serializer.TrySerialize(elementType, item, out serializedItem);
                 result.AddMessages(itemResult);
-                if (itemResult.Failed) continue;
+                if ( itemResult.Failed ) continue;
 
                 serializedList.Add(serializedItem);
             }
@@ -46,7 +48,7 @@ namespace ParadoxNotion.Serialization.FullSerializer.Internal {
             var result = fsResult.Success;
 
             // Verify that we actually have an List
-            if ((result += CheckType(data, fsDataType.Array)).Failed) {
+            if ( ( result += CheckType(data, fsDataType.Array) ).Failed ) {
                 return result;
             }
 
@@ -56,16 +58,16 @@ namespace ParadoxNotion.Serialization.FullSerializer.Internal {
             var list = new ArrayList(serializedList.Count);
             int existingCount = list.Count;
 
-            for (int i = 0; i < serializedList.Count; ++i) {
+            for ( int i = 0; i < serializedList.Count; ++i ) {
                 var serializedItem = serializedList[i];
                 object deserialized = null;
-                if (i < existingCount) deserialized = list[i];
+                if ( i < existingCount ) deserialized = list[i];
 
                 var itemResult = Serializer.TryDeserialize(serializedItem, elementType, ref deserialized);
                 result.AddMessages(itemResult);
-                if (itemResult.Failed) continue;
+                if ( itemResult.Failed ) continue;
 
-                if (i < existingCount) list[i] = deserialized;
+                if ( i < existingCount ) list[i] = deserialized;
                 else list.Add(deserialized);
             }
 

@@ -1,15 +1,13 @@
 ﻿using System;
 
-namespace ParadoxNotion.Serialization.FullSerializer {
-    /// <summary>
+namespace ParadoxNotion.Serialization.FullSerializer
+{
+
     /// The serialization converter allows for customization of the serialization process.
-    /// </summary>
-    public abstract class fsConverter : fsBaseConverter {
-        /// <summary>
+    public abstract class fsConverter : fsBaseConverter
+    {
+
         /// Can this converter serialize and deserialize the given object type?
-        /// </summary>
-        /// <param name="type">The given object type.</param>
-        /// <returns>True if the converter can serialize it, false otherwise.</returns>
         public abstract bool CanProcess(Type type);
     }
 }

@@ -3,12 +3,13 @@ using System;
 using UnityEngine;
 
 
-namespace ParadoxNotion.Services {
+namespace ParadoxNotion.Services
+{
 
     ///Singleton. Automatically added when needed, collectively calls methods that needs updating amongst other things relevant to MonoBehaviours
-    public class MonoManager : MonoBehaviour {
+    public class MonoManager : MonoBehaviour
+    {
 
-        //These can be used by the user, or when un/subscribe is not regular.
         public event Action onUpdate;
         public event Action onLateUpdate;
         public event Action onFixedUpdate;
@@ -16,7 +17,7 @@ namespace ParadoxNotion.Services {
         public event Action onApplicationQuit;
         public event Action<bool> onApplicationPause;
 
-        public static bool isQuiting{get; private set;}
+        public static bool isQuiting { get; private set; }
 
         private static MonoManager _current;
         public static MonoManager current {
@@ -24,7 +25,7 @@ namespace ParadoxNotion.Services {
             {
                 if ( _current == null && !isQuiting ) {
                     _current = FindObjectOfType<MonoManager>();
-                    if ( _current == null ){
+                    if ( _current == null ) {
                         _current = new GameObject("_MonoManager").AddComponent<MonoManager>();
                     }
                 }
@@ -36,15 +37,15 @@ namespace ParadoxNotion.Services {
         ///Creates the MonoManager singleton
         public static void Create() { _current = current; }
 
-        protected void OnApplicationQuit(){
+        protected void OnApplicationQuit() {
             isQuiting = true;
-            if (onApplicationQuit != null){
+            if ( onApplicationQuit != null ) {
                 onApplicationQuit();
             }
         }
 
-        protected void OnApplicationPause(bool isPause){
-            if (onApplicationPause != null){
+        protected void OnApplicationPause(bool isPause) {
+            if ( onApplicationPause != null ) {
                 onApplicationPause(isPause);
             }
         }
@@ -59,21 +60,21 @@ namespace ParadoxNotion.Services {
             _current = this;
         }
 
-        protected void Update(){
-            if (onUpdate != null){ onUpdate(); }
+        protected void Update() {
+            if ( onUpdate != null ) { onUpdate(); }
         }
 
-        protected void LateUpdate(){
-            if (onLateUpdate != null){ onLateUpdate(); }
+        protected void LateUpdate() {
+            if ( onLateUpdate != null ) { onLateUpdate(); }
         }
 
-        protected void FixedUpdate(){
-            if (onFixedUpdate != null){ onFixedUpdate(); }
+        protected void FixedUpdate() {
+            if ( onFixedUpdate != null ) { onFixedUpdate(); }
         }
 
 #if UNITY_EDITOR
-        protected void OnGUI(){
-            if (onGUI != null){ onGUI(); }
+        protected void OnGUI() {
+            if ( onGUI != null ) { onGUI(); }
         }
 #endif
 

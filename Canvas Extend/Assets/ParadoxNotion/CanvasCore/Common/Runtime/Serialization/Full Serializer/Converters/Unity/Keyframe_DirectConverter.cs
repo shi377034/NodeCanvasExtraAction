@@ -5,14 +5,10 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace ParadoxNotion.Serialization.FullSerializer {
-    partial class fsConverterRegistrar {
-        public static Internal.DirectConverters.Keyframe_DirectConverter Register_Keyframe_DirectConverter;
-    }
-}
-
-namespace ParadoxNotion.Serialization.FullSerializer.Internal.DirectConverters {
-    public class Keyframe_DirectConverter : fsDirectConverter<Keyframe> {
+namespace ParadoxNotion.Serialization.FullSerializer.Internal.DirectConverters
+{
+    public class Keyframe_DirectConverter : fsDirectConverter<Keyframe>
+    {
         protected override fsResult DoSerialize(Keyframe model, Dictionary<string, fsData> serialized) {
             var result = fsResult.Success;
 

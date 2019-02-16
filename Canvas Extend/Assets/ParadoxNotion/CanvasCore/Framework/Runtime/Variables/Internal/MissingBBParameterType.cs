@@ -1,13 +1,24 @@
 ﻿using ParadoxNotion.Serialization;
-using ParadoxNotion.Serialization.FullSerializer;
 
-namespace NodeCanvas.Framework.Internal {
+namespace NodeCanvas.Framework.Internal
+{
 
-	public class MissingBBParameterType : BBParameter<object>, IMissingRecoverable{
+    public class MissingBBParameterType : BBParameter<object>, IMissingRecoverable
+    {
 
-		[fsProperty]
-		public string missingType{get;set;}
-		[fsProperty]
-		public string recoveryState{get;set;}		
-	}
+        [UnityEngine.SerializeField]
+        private string _missingType;
+        [UnityEngine.SerializeField]
+        private string _recoveryState;
+
+        string IMissingRecoverable.missingType {
+            get { return _missingType; }
+            set { _missingType = value; }
+        }
+
+        string IMissingRecoverable.recoveryState {
+            get { return _recoveryState; }
+            set { _recoveryState = value; }
+        }
+    }
 }

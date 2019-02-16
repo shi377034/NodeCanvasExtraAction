@@ -3,14 +3,10 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace ParadoxNotion.Serialization.FullSerializer {
-    partial class fsConverterRegistrar {
-        public static Internal.DirectConverters.Rect_DirectConverter Register_Rect_DirectConverter;
-    }
-}
-
-namespace ParadoxNotion.Serialization.FullSerializer.Internal.DirectConverters {
-    public class Rect_DirectConverter : fsDirectConverter<Rect> {
+namespace ParadoxNotion.Serialization.FullSerializer.Internal.DirectConverters
+{
+    public class Rect_DirectConverter : fsDirectConverter<Rect>
+    {
         protected override fsResult DoSerialize(Rect model, Dictionary<string, fsData> serialized) {
             var result = fsResult.Success;
 

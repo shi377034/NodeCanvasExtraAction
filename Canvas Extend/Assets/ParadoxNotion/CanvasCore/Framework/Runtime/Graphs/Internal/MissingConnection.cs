@@ -1,30 +1,41 @@
 ﻿using UnityEngine;
-using System.Linq;
 using ParadoxNotion.Design;
 using ParadoxNotion.Serialization;
-using ParadoxNotion.Serialization.FullSerializer;
 
-namespace NodeCanvas.Framework.Internal{
+namespace NodeCanvas.Framework.Internal
+{
 
     ///Missing node types are deserialized into this on deserialization and can load back if type is found
     [DoNotList]
-	sealed public class MissingConnection : Connection, IMissingRecoverable {
+    sealed public class MissingConnection : Connection, IMissingRecoverable
+    {
 
-		[fsProperty]
-		public string missingType{get;set;}
-		[fsProperty]
-		public string recoveryState{get;set;}
+        [SerializeField]
+        private string _missingType;
+        [SerializeField]
+        private string _recoveryState;
 
-		////////////////////////////////////////
-		///////////GUI AND EDITOR STUFF/////////
-		////////////////////////////////////////
-		#if UNITY_EDITOR
-			
-		protected override void OnConnectionInspectorGUI(){
-			var text = missingType.Substring(0, missingType.Contains("[")? missingType.IndexOf("[") : missingType.Length );
-			GUILayout.Label(text);
-		}
+        string IMissingRecoverable.missingType {
+            get { return _missingType; }
+            set { _missingType = value; }
+        }
 
-		#endif
-	}
+        string IMissingRecoverable.recoveryState {
+            get { return _recoveryState; }
+            set { _recoveryState = value; }
+        }
+
+
+        ////////////////////////////////////////
+        ///////////GUI AND EDITOR STUFF/////////
+        ////////////////////////////////////////
+#if UNITY_EDITOR
+
+        protected override void OnConnectionInspectorGUI() {
+            var text = _missingType.Substring(0, _missingType.Contains("[") ? _missingType.IndexOf("[") : _missingType.Length);
+            GUILayout.Label(text);
+        }
+
+#endif
+    }
 }

@@ -3,14 +3,10 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace ParadoxNotion.Serialization.FullSerializer {
-    partial class fsConverterRegistrar {
-        public static Internal.DirectConverters.AnimationCurve_DirectConverter Register_AnimationCurve_DirectConverter;
-    }
-}
-
-namespace ParadoxNotion.Serialization.FullSerializer.Internal.DirectConverters {
-    public class AnimationCurve_DirectConverter : fsDirectConverter<AnimationCurve> {
+namespace ParadoxNotion.Serialization.FullSerializer.Internal.DirectConverters
+{
+    public class AnimationCurve_DirectConverter : fsDirectConverter<AnimationCurve>
+    {
         protected override fsResult DoSerialize(AnimationCurve model, Dictionary<string, fsData> serialized) {
             var result = fsResult.Success;
 

@@ -1,40 +1,39 @@
 ﻿using System;
-using System.Linq;
-using System.Reflection;
 using UnityEngine;
-using ParadoxNotion.Serialization.FullSerializer.Internal;
 
-namespace ParadoxNotion.Serialization{
+namespace ParadoxNotion.Serialization
+{
 
-	[Serializable]
-	public class SerializedTypeInfo : ISerializationCallbackReceiver {
-		
-		[SerializeField]
-		private string _baseInfo;
+    [Serializable]
+    public class SerializedTypeInfo : ISerializationCallbackReceiver
+    {
 
-		[NonSerialized]
-		private Type _type;
+        [SerializeField]
+        private string _baseInfo;
 
-		void ISerializationCallbackReceiver.OnBeforeSerialize(){
-			if (_type != null){
-				_baseInfo = _type.FullName;
-			}
-		}
+        [NonSerialized]
+        private Type _type;
 
-		void ISerializationCallbackReceiver.OnAfterDeserialize(){
-			if (_baseInfo == null){
-				return;
-			}
-			_type = fsTypeCache.GetType(_baseInfo, null);
-		}
+        void ISerializationCallbackReceiver.OnBeforeSerialize() {
+            if ( _type != null ) {
+                _baseInfo = _type.FullName;
+            }
+        }
 
-		public SerializedTypeInfo(){}
-		public SerializedTypeInfo(Type info){
-			_type = info;
-		}
+        void ISerializationCallbackReceiver.OnAfterDeserialize() {
+            if ( _baseInfo == null ) {
+                return;
+            }
+            _type = ReflectionTools.GetType(_baseInfo, true);
+        }
 
-		public Type Get(){
-			return _type;
-		}
-	}
+        public SerializedTypeInfo() { }
+        public SerializedTypeInfo(Type info) {
+            _type = info;
+        }
+
+        public Type Get() {
+            return _type;
+        }
+    }
 }

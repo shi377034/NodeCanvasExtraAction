@@ -10,263 +10,267 @@ using ParadoxNotion.Serialization;
 using UnityEngine;
 using System.Linq;
 
-namespace NodeCanvas.Framework{
+namespace NodeCanvas.Framework
+{
 
-	/// ConditionList is a ConditionTask itself that holds many ConditionTasks. It can be set to either require all true or any true.
-	[DoNotList]
-    public class ConditionList : ConditionTask, ISubTasksContainer{
+    /// ConditionList is a ConditionTask itself that holds many ConditionTasks. It can be set to either require all true or any true.
+    [DoNotList]
+    public class ConditionList : ConditionTask, ISubTasksContainer
+    {
 
-		public enum ConditionsCheckMode
-		{
-			AllTrueRequired,
-			AnyTrueSuffice
-		}
+        public enum ConditionsCheckMode
+        {
+            AllTrueRequired,
+            AnyTrueSuffice
+        }
 
-		public ConditionsCheckMode checkMode;
-		public List<ConditionTask> conditions = new List<ConditionTask>();
+        public ConditionsCheckMode checkMode;
+        public List<ConditionTask> conditions = new List<ConditionTask>();
 
-		private List<ConditionTask> initialActiveConditions;
+        private List<ConditionTask> initialActiveConditions;
 
-		private bool allTrueRequired{
-			get {return checkMode == ConditionsCheckMode.AllTrueRequired;}
-		}
+        private bool allTrueRequired {
+            get { return checkMode == ConditionsCheckMode.AllTrueRequired; }
+        }
 
 
-		protected override string info{
-			get
-			{
-				if (conditions.Count == 0){
-					return "No Conditions";
-				}
-				
-				var finalText = conditions.Count > 1? ("<b>(" + (allTrueRequired? "ALL True" : "ANY True") + ")</b>\n") : string.Empty;
-				for (var i = 0; i < conditions.Count; i++){
+        protected override string info {
+            get
+            {
+                if ( conditions.Count == 0 ) {
+                    return "No Conditions";
+                }
 
-					if (conditions[i] == null){
-						continue;
-					}
+                var finalText = conditions.Count > 1 ? ( "<b>(" + ( allTrueRequired ? "ALL True" : "ANY True" ) + ")</b>\n" ) : string.Empty;
+                for ( var i = 0; i < conditions.Count; i++ ) {
 
-					if (conditions[i].isActive || (initialActiveConditions != null && initialActiveConditions.Contains(conditions[i])) ){
-						var prefix = "▪";
-						finalText += prefix + conditions[i].summaryInfo + (i == conditions.Count -1? "" : "\n" );
-					}
-				}
-				return finalText;
-			}
-		}
+                    if ( conditions[i] == null ) {
+                        continue;
+                    }
 
-		Task[] ISubTasksContainer.GetSubTasks(){
+                    if ( conditions[i].isActive || ( initialActiveConditions != null && initialActiveConditions.Contains(conditions[i]) ) ) {
+                        var prefix = "▪";
+                        finalText += prefix + conditions[i].summaryInfo + ( i == conditions.Count - 1 ? "" : "\n" );
+                    }
+                }
+                return finalText;
+            }
+        }
+
+        Task[] ISubTasksContainer.GetSubTasks() {
             return conditions.ToArray();
         }
 
-		///ConditionList overrides to duplicate listed conditions correctly
-		public override Task Duplicate(ITaskSystem newOwnerSystem){
-			var newList = (ConditionList)base.Duplicate(newOwnerSystem);
-			newList.conditions.Clear();
-			foreach (var condition in conditions){
-				newList.AddCondition( (ConditionTask)condition.Duplicate(newOwnerSystem) );
-			}
+        ///ConditionList overrides to duplicate listed conditions correctly
+        public override Task Duplicate(ITaskSystem newOwnerSystem) {
+            var newList = (ConditionList)base.Duplicate(newOwnerSystem);
+            newList.conditions.Clear();
+            foreach ( var condition in conditions ) {
+                newList.AddCondition((ConditionTask)condition.Duplicate(newOwnerSystem));
+            }
 
-			return newList;
-		}
+            return newList;
+        }
 
-		protected override string OnInit(){
-			if (initialActiveConditions == null){ //cache the initially active conditions within the list
-				initialActiveConditions = conditions.Where(c => c.isActive).ToList();
-			}
-			return null;
-		}
+        protected override string OnInit() {
+            if ( initialActiveConditions == null ) { //cache the initially active conditions within the list
+                initialActiveConditions = conditions.Where(c => c.isActive).ToList();
+            }
+            return null;
+        }
 
-		//Forward Enable call
-		protected override void OnEnable(){
-			for (var i = 0; i < initialActiveConditions.Count; i++){
-				initialActiveConditions[i].Enable(agent, blackboard);
-			}
-		}
+        //Forward Enable call
+        protected override void OnEnable() {
+            for ( var i = 0; i < initialActiveConditions.Count; i++ ) {
+                initialActiveConditions[i].Enable(agent, blackboard);
+            }
+        }
 
-		//Forward Disable call
-		protected override void OnDisable(){
-			for (var i = 0; i < initialActiveConditions.Count; i++){
-				initialActiveConditions[i].Disable();
-			}
-		}
+        //Forward Disable call
+        protected override void OnDisable() {
+            for ( var i = 0; i < initialActiveConditions.Count; i++ ) {
+                initialActiveConditions[i].Disable();
+            }
+        }
 
-		protected override bool OnCheck(){
-			var succeedChecks = 0;
-			for (var i = 0; i < conditions.Count; i++){
+        protected override bool OnCheck() {
+            var succeedChecks = 0;
+            for ( var i = 0; i < conditions.Count; i++ ) {
 
-				if (!conditions[i].isActive){
-					succeedChecks ++;
-					continue;
-				}
+                if ( !conditions[i].isActive ) {
+                    succeedChecks++;
+                    continue;
+                }
 
-				if (conditions[i].CheckCondition(agent, blackboard)){
-					if (!allTrueRequired){
-						return true;
-					}
-					succeedChecks ++;
+                if ( conditions[i].CheckCondition(agent, blackboard) ) {
+                    if ( !allTrueRequired ) {
+                        return true;
+                    }
+                    succeedChecks++;
 
-				} else {
+                } else {
 
-					if (allTrueRequired){
-						return false;
-					}
-				}
-			}
+                    if ( allTrueRequired ) {
+                        return false;
+                    }
+                }
+            }
 
-			return succeedChecks == conditions.Count;
-		}
+            return succeedChecks == conditions.Count;
+        }
 
-		public override void OnDrawGizmos(){
-			for (var i = 0; i < conditions.Count; i++){
-				if (conditions[i].isActive){
-					conditions[i].OnDrawGizmos();
-				}
-			}
-		}
+        public override void OnDrawGizmos() {
+            for ( var i = 0; i < conditions.Count; i++ ) {
+                if ( conditions[i].isActive ) {
+                    conditions[i].OnDrawGizmos();
+                }
+            }
+        }
 
-		public override void OnDrawGizmosSelected(){
-			for (var i = 0; i < conditions.Count; i++){
-				if (conditions[i].isActive){
-					conditions[i].OnDrawGizmosSelected();
-				}
-			}
-		}
+        public override void OnDrawGizmosSelected() {
+            for ( var i = 0; i < conditions.Count; i++ ) {
+                if ( conditions[i].isActive ) {
+                    conditions[i].OnDrawGizmosSelected();
+                }
+            }
+        }
 
-		public void AddCondition(ConditionTask condition){
+        public void AddCondition(ConditionTask condition) {
 
-			if (condition is ConditionList){
-				Debug.LogWarning("Adding a ConditionList within another ConditionList is not allowed for clarity");
-				return;
-			}
+            if ( condition is ConditionList ) {
+                foreach ( var subCondition in ( condition as ConditionList ).conditions ) {
+                    AddCondition(subCondition);
+                }
+                return;
+            }
 
-			#if UNITY_EDITOR
-			if (!Application.isPlaying){
-				Undo.RecordObject(ownerSystem.contextObject, "List Add Task");
-				currentViewCondition = condition;
-			}
-			#endif
-			
-			conditions.Add(condition);
-			condition.SetOwnerSystem(this.ownerSystem);
-		}
+#if UNITY_EDITOR
+            if ( !Application.isPlaying ) {
+                Undo.RecordObject(ownerSystem.contextObject, "List Add Task");
+                currentViewCondition = condition;
+            }
+#endif
+
+            conditions.Add(condition);
+            condition.SetOwnerSystem(this.ownerSystem);
+        }
 
 
-		///----------------------------------------------------------------------------------------------
-		///---------------------------------------UNITY EDITOR-------------------------------------------
-		#if UNITY_EDITOR
-		
-		private ConditionTask currentViewCondition;
+        ///----------------------------------------------------------------------------------------------
+        ///---------------------------------------UNITY EDITOR-------------------------------------------
+#if UNITY_EDITOR
 
-		//...
-		protected override void OnTaskInspectorGUI(){
-			ShowListGUI();
-			ShowNestedConditionsGUI();
-		}
+        private ConditionTask currentViewCondition;
 
-		///Show the sub-tasks list
-		public void ShowListGUI(){
+        //...
+        protected override void OnTaskInspectorGUI() {
+            ShowListGUI();
+            ShowNestedConditionsGUI();
+        }
 
-			TaskEditor.ShowCreateTaskSelectionButton<ConditionTask>(ownerSystem, AddCondition);
+        ///Show the sub-tasks list
+        public void ShowListGUI() {
 
-			ValidateList();
+            TaskEditor.ShowCreateTaskSelectionButton<ConditionTask>(ownerSystem, AddCondition);
 
-			if (conditions.Count == 0){
-				EditorGUILayout.HelpBox("No Conditions", MessageType.None);
-				return;
-			}
+            ValidateList();
 
-			if (conditions.Count == 1){
-				return;
-			}
-			
-			EditorUtils.ReorderableList(conditions, (i, picked)=>
-			{
-				var condition = conditions[i];
-				GUI.color = Color.white.WithAlpha( condition == currentViewCondition? 0.75f : 0.25f);
-				GUILayout.BeginHorizontal("box");
+            if ( conditions.Count == 0 ) {
+                EditorGUILayout.HelpBox("No Conditions", MessageType.None);
+                return;
+            }
 
-				GUI.color = Color.white.WithAlpha( condition.isActive? 0.8f : 0.25f );
-				GUI.enabled = !Application.isPlaying;
-				condition.isActive = EditorGUILayout.Toggle(condition.isActive, GUILayout.Width(18));
-				GUI.enabled = true;
+            if ( conditions.Count == 1 ) {
+                return;
+            }
 
-				GUILayout.Label(condition.summaryInfo, GUILayout.MinWidth(0), GUILayout.ExpandWidth(true));
-				
-				if (!Application.isPlaying && GUILayout.Button("X", GUILayout.MaxWidth(20))){
-					Undo.RecordObject(ownerSystem.contextObject, "List Remove Task");
-					conditions.RemoveAt(i);
-				}
+            EditorUtils.ReorderableList(conditions, (i, picked) =>
+            {
+                var condition = conditions[i];
+                GUI.color = Color.white.WithAlpha(condition == currentViewCondition ? 0.75f : 0.25f);
+                GUILayout.BeginHorizontal("box");
 
-				GUILayout.EndHorizontal();
+                GUI.color = Color.white.WithAlpha(condition.isActive ? 0.8f : 0.25f);
+                GUI.enabled = !Application.isPlaying;
+                condition.isActive = EditorGUILayout.Toggle(condition.isActive, GUILayout.Width(18));
+                GUI.enabled = true;
 
-				var lastRect = GUILayoutUtility.GetLastRect();
-				EditorGUIUtility.AddCursorRect(lastRect, MouseCursor.Link);
-				if (Event.current.type == EventType.MouseDown && lastRect.Contains(Event.current.mousePosition)){
-					currentViewCondition = condition == currentViewCondition? null : condition;
-					Event.current.Use();
-				}
+                GUILayout.Label(condition.summaryInfo, GUILayout.MinWidth(0), GUILayout.ExpandWidth(true));
 
-				GUI.color = Color.white;
-			});
+                if ( !Application.isPlaying && GUILayout.Button("X", GUILayout.MaxWidth(20)) ) {
+                    Undo.RecordObject(ownerSystem.contextObject, "List Remove Task");
+                    conditions.RemoveAt(i);
+                }
 
-			checkMode = (ConditionsCheckMode)EditorGUILayout.EnumPopup(checkMode);
-		}
+                GUILayout.EndHorizontal();
 
-		///Show currently selected task inspector
-		public void ShowNestedConditionsGUI(){
+                var lastRect = GUILayoutUtility.GetLastRect();
+                EditorGUIUtility.AddCursorRect(lastRect, MouseCursor.Link);
+                if ( Event.current.type == EventType.MouseDown && lastRect.Contains(Event.current.mousePosition) ) {
+                    currentViewCondition = condition == currentViewCondition ? null : condition;
+                    Event.current.Use();
+                }
 
-			if (conditions.Count == 1){
-				currentViewCondition = conditions[0];
-			}
+                GUI.color = Color.white;
+            });
 
-			if (currentViewCondition != null){
-				EditorUtils.Separator();
-				TaskEditor.TaskFieldSingle(currentViewCondition, (c)=>
-				{
-					if (c == null){
-						var i = conditions.IndexOf(currentViewCondition);
-						conditions.RemoveAt(i);
-					}
-					currentViewCondition = (ConditionTask)c;
-				});
-			}
-		}
+            checkMode = (ConditionsCheckMode)EditorGUILayout.EnumPopup(checkMode);
+        }
 
-		//Validate possible null tasks
-		void ValidateList(){
-			for (var i = 0; i < conditions.Count; i++){
-				if (conditions[i] == null){
-					conditions.RemoveAt(i);
-				}
-			}
-		}
+        ///Show currently selected task inspector
+        public void ShowNestedConditionsGUI() {
 
-		[ContextMenu("Save List Preset")]
-		void DoSavePreset(){
-			var path = EditorUtility.SaveFilePanelInProject ("Save Preset", "", "conditionList", "");
-            if (!string.IsNullOrEmpty(path)){
-                System.IO.File.WriteAllText( path, JSONSerializer.Serialize(typeof(ConditionList), this, true) ); //true for pretyJson
+            if ( conditions.Count == 1 ) {
+                currentViewCondition = conditions[0];
+            }
+
+            if ( currentViewCondition != null ) {
+                EditorUtils.Separator();
+                TaskEditor.TaskFieldSingle(currentViewCondition, (c) =>
+                {
+                    if ( c == null ) {
+                        var i = conditions.IndexOf(currentViewCondition);
+                        conditions.RemoveAt(i);
+                    }
+                    currentViewCondition = (ConditionTask)c;
+                });
+            }
+        }
+
+        //Validate possible null tasks
+        void ValidateList() {
+            for ( var i = 0; i < conditions.Count; i++ ) {
+                if ( conditions[i] == null ) {
+                    conditions.RemoveAt(i);
+                }
+            }
+        }
+
+        [ContextMenu("Save List Preset")]
+        void DoSavePreset() {
+            var path = EditorUtility.SaveFilePanelInProject("Save Preset", "", "conditionList", "");
+            if ( !string.IsNullOrEmpty(path) ) {
+                System.IO.File.WriteAllText(path, JSONSerializer.Serialize(typeof(ConditionList), this, true)); //true for pretyJson
                 AssetDatabase.Refresh();
             }
-		}
+        }
 
-		[ContextMenu("Load List Preset")]
-		void DoLoadPreset(){
+        [ContextMenu("Load List Preset")]
+        void DoLoadPreset() {
             var path = EditorUtility.OpenFilePanel("Load Preset", "Assets", "conditionList");
-            if (!string.IsNullOrEmpty(path)){
+            if ( !string.IsNullOrEmpty(path) ) {
                 var json = System.IO.File.ReadAllText(path);
                 var list = JSONSerializer.Deserialize<ConditionList>(json);
                 this.conditions = list.conditions;
                 this.checkMode = list.checkMode;
                 this.currentViewCondition = null;
-                foreach(var a in conditions){
-                	a.SetOwnerSystem(this.ownerSystem);
+                foreach ( var a in conditions ) {
+                    a.SetOwnerSystem(this.ownerSystem);
                 }
-            }				
-		}
+            }
+        }
 
 
-		#endif
-	}
+#endif
+    }
 }

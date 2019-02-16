@@ -5,79 +5,85 @@ using NodeCanvas.Framework;
 using UnityEditor;
 using UnityEngine;
 
-namespace NodeCanvas.Editor{
+namespace NodeCanvas.Editor
+{
 
-	public class ExternalInspectorWindow : EditorWindow {
+    public class ExternalInspectorWindow : EditorWindow
+    {
 
-		private object currentSelection;
-		private Vector2 scrollPos;
+        private object currentSelection;
+        private Vector2 scrollPos;
 
-	    public static void ShowWindow() {
-	        var window = GetWindow(typeof(ExternalInspectorWindow)) as ExternalInspectorWindow;
-	        window.Show();
-			Prefs.useExternalInspector = true;
-	    }
+        public static void ShowWindow() {
+            var window = GetWindow(typeof(ExternalInspectorWindow)) as ExternalInspectorWindow;
+            window.Show();
+            Prefs.useExternalInspector = true;
+        }
 
-		void OnEnable(){
-			titleContent = new GUIContent("Inspector", StyleSheet.canvasIcon);
-		}
+        void OnEnable() {
+            titleContent = new GUIContent("Inspector", StyleSheet.canvasIcon);
+        }
 
-		void OnDestroy(){
-			Prefs.useExternalInspector = false;
-		}
+        void OnDestroy() {
+            Prefs.useExternalInspector = false;
+        }
 
-		void Update(){
-			if (currentSelection != GraphEditorUtility.activeElement){
-				Repaint();
-			}
-		}
+        void Update() {
+            if ( currentSelection != GraphEditorUtility.activeElement ) {
+                Repaint();
+            }
+        }
 
-		void OnGUI(){
+        void OnGUI() {
 
-			if (GraphEditor.currentGraph == null){
-				GUILayout.Label("No current NodeCanvas Graph open");				
-				return;
-			}
-				
-			if (EditorApplication.isCompiling){
-				ShowNotification(new GUIContent("Compiling Please Wait..."));
-				return;			
-			}
+            if ( EditorGUIUtility.isProSkin ) {
+                GUI.Box(new Rect(0, 0, Screen.width, Screen.height), string.Empty, Styles.shadowedBackground);
+            }
 
-			currentSelection = GraphEditorUtility.activeElement;
+            if ( GraphEditor.currentGraph == null ) {
+                GUILayout.Label("No current NodeCanvas Graph open");
+                return;
+            }
 
-			if (currentSelection == null){
-				GUILayout.Label("No Node Selected in Canvas");
-				return;
-			}
+            if ( EditorApplication.isCompiling ) {
+                ShowNotification(new GUIContent("Compiling Please Wait..."));
+                return;
+            }
 
-			scrollPos = GUILayout.BeginScrollView(scrollPos);
+            currentSelection = GraphEditorUtility.activeElement;
 
-			if (currentSelection is Node){
-				var node = (Node)currentSelection;
-				Title(node.name);
-				Node.ShowNodeInspectorGUI(node);
-			}
-			
-			if (currentSelection is Connection){
-				Title("Connection");
-				Connection.ShowConnectionInspectorGUI( currentSelection as Connection );
-			}
+            if ( currentSelection == null ) {
+                GUILayout.Label("No Node Selected in Canvas");
+                return;
+            }
 
-			EditorUtils.EndOfInspector();
-			GUILayout.EndScrollView();
-		}
+            scrollPos = GUILayout.BeginScrollView(scrollPos);
 
-		void Title(string text){
-			GUILayout.Space(5);
-			GUILayout.BeginHorizontal("box", GUILayout.Height(28));
-			GUILayout.FlexibleSpace();
-			GUILayout.Label("<b><size=16>" + text + "</size></b>");
-			GUILayout.FlexibleSpace();
-			GUILayout.EndHorizontal();
-			EditorUtils.BoldSeparator();
-		}
-	}
+            if ( currentSelection is Node ) {
+                var node = (Node)currentSelection;
+                Title(node.name);
+                Node.ShowNodeInspectorGUI(node);
+            }
+
+            if ( currentSelection is Connection ) {
+                Title("Connection");
+                Connection.ShowConnectionInspectorGUI(currentSelection as Connection);
+            }
+
+            EditorUtils.EndOfInspector();
+            GUILayout.EndScrollView();
+        }
+
+        void Title(string text) {
+            GUILayout.Space(5);
+            GUILayout.BeginHorizontal("box", GUILayout.Height(28));
+            GUILayout.FlexibleSpace();
+            GUILayout.Label("<b><size=16>" + text + "</size></b>");
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
+            EditorUtils.BoldSeparator();
+        }
+    }
 }
 
 #endif

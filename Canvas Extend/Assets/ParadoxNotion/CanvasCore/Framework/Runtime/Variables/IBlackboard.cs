@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-namespace NodeCanvas.Framework {
+namespace NodeCanvas.Framework
+{
 
     /// An interface for Blackboards, or otherwise for a Variables container.
     [ParadoxNotion.Design.SpoofAOT]

@@ -5,45 +5,46 @@ using UnityEditor;
 using UnityEngine;
 
 
-namespace ParadoxNotion.Design{
+namespace ParadoxNotion.Design
+{
 
-	//Simplified version of:
-	//http://wiki.unity3d.com/index.php?title=EditorUndoManager
+    //Simplified version of:
+    //http://wiki.unity3d.com/index.php?title=EditorUndoManager
 
-	/// <summary>
-	/// A simple Undo manager
-	/// </summary>
-    public static class UndoManager {
-	
-		public static void CheckUndo(Object target, string name){
+    /// <summary>
+    /// A simple Undo manager
+    /// </summary>
+    public static class UndoManager
+    {
 
-			if (Application.isPlaying || target == null){
-				return;
-			}
+        public static void CheckUndo(Object target, string name) {
 
-			var e = Event.current;
-			if (
-				(e.type == EventType.MouseDown) ||
-				(e.type == EventType.KeyDown) ||
-				(e.type == EventType.DragPerform) ||
-				(e.type == EventType.ExecuteCommand)
-				)
-			{
-				Undo.RecordObject(target, name);
-			}
-		}
+            if ( Application.isPlaying || target == null ) {
+                return;
+            }
 
-		public static void CheckDirty(Object target){
+            var e = Event.current;
+            if (
+                ( e.type == EventType.MouseDown ) ||
+                ( e.type == EventType.KeyDown ) ||
+                ( e.type == EventType.DragPerform ) ||
+                ( e.type == EventType.ExecuteCommand )
+                ) {
+                Undo.RecordObject(target, name);
+            }
+        }
 
-			if (Application.isPlaying || target == null){
-				return;
-			}
+        public static void CheckDirty(Object target) {
 
-			if ( GUI.changed /*||	Event.current.type == EventType.MouseUp*/ ){
-				EditorUtility.SetDirty(target);
-			}
-		}
-	}
+            if ( Application.isPlaying || target == null ) {
+                return;
+            }
+
+            if ( GUI.changed /*||	Event.current.type == EventType.MouseUp*/ ) {
+                EditorUtility.SetDirty(target);
+            }
+        }
+    }
 }
 
 #endif

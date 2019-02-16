@@ -1,38 +1,47 @@
 ﻿using System.Linq;
 using ParadoxNotion.Design;
 using ParadoxNotion.Serialization;
-using ParadoxNotion.Serialization.FullSerializer;
 using UnityEngine;
 
 
-namespace NodeCanvas.Framework.Internal{
+namespace NodeCanvas.Framework.Internal
+{
 
-	/// <summary>
-	/// Injected when an ActionTask is missing. Recovers back when that ActionTask is found.
-	/// </summary>
+    /// Injected when an ActionTask is missing. Recovers back when that ActionTask is found.
     [DoNotList]
-	[Description("Please resolve the MissingTask issue by either replacing the task or importing the missing task type in the project")]
-	public class MissingAction : ActionTask, IMissingRecoverable {
+    [Description("Please resolve the MissingTask issue by either replacing the task or importing the missing task type in the project")]
+    public class MissingAction : ActionTask, IMissingRecoverable
+    {
 
-		[fsProperty]
-		public string missingType{get;set;}
-		[fsProperty]
-		public string recoveryState{get;set;}
+        [SerializeField]
+        private string _missingType;
+        [SerializeField]
+        private string _recoveryState;
 
-		protected override string info{
-			get { return string.Format("<color=#ff6457>* {0} *</color>", missingType.Split('.').Last()); }
-		}
+        string IMissingRecoverable.missingType {
+            get { return _missingType; }
+            set { _missingType = value; }
+        }
+
+        string IMissingRecoverable.recoveryState {
+            get { return _recoveryState; }
+            set { _recoveryState = value; }
+        }
+
+        protected override string info {
+            get { return string.Format("<color=#ff6457>* {0} *</color>", _missingType.Split('.').Last()); }
+        }
 
 
-		////////////////////////////////////////
-		///////////GUI AND EDITOR STUFF/////////
-		////////////////////////////////////////
-		#if UNITY_EDITOR
-			
-		protected override void OnTaskInspectorGUI(){
-			GUILayout.Label(missingType);
-		}
+        ////////////////////////////////////////
+        ///////////GUI AND EDITOR STUFF/////////
+        ////////////////////////////////////////
+#if UNITY_EDITOR
 
-		#endif
-	}
+        protected override void OnTaskInspectorGUI() {
+            GUILayout.Label(_missingType);
+        }
+
+#endif
+    }
 }

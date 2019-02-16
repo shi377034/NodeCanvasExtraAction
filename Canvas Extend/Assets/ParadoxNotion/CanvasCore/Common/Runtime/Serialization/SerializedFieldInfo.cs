@@ -4,44 +4,46 @@ using System.Reflection;
 using UnityEngine;
 using ParadoxNotion.Serialization.FullSerializer.Internal;
 
-namespace ParadoxNotion.Serialization{
+namespace ParadoxNotion.Serialization
+{
 
-	[Serializable]
-	public class SerializedFieldInfo : ISerializationCallbackReceiver {
-		
-		[SerializeField]
-		private string _baseInfo;
+    [Serializable]
+    public class SerializedFieldInfo : ISerializationCallbackReceiver
+    {
 
-		[NonSerialized]
-		private FieldInfo _field;
+        [SerializeField]
+        private string _baseInfo;
 
-		void ISerializationCallbackReceiver.OnBeforeSerialize(){
-			if (_field != null){
-				_baseInfo = string.Format("{0}|{1}", _field.RTReflectedType().FullName, _field.Name);
-			}
-		}
+        [NonSerialized]
+        private FieldInfo _field;
 
-		void ISerializationCallbackReceiver.OnAfterDeserialize(){
-			if (_baseInfo == null){
-				return;
-			}
-			var split = _baseInfo.Split('|');
-			var type = fsTypeCache.GetType(split[0], null);
-			if (type == null){
-				_field = null;
-				return;
-			}
-			var name = split[1];
-			_field = type.RTGetField(name);
-		}
+        void ISerializationCallbackReceiver.OnBeforeSerialize() {
+            if ( _field != null ) {
+                _baseInfo = string.Format("{0}|{1}", _field.RTReflectedOrDeclaredType().FullName, _field.Name);
+            }
+        }
 
-		public SerializedFieldInfo(){}
-		public SerializedFieldInfo(FieldInfo info){
-			_field = info;
-		}
+        void ISerializationCallbackReceiver.OnAfterDeserialize() {
+            if ( _baseInfo == null ) {
+                return;
+            }
+            var split = _baseInfo.Split('|');
+            var type = ReflectionTools.GetType(split[0], true);
+            if ( type == null ) {
+                _field = null;
+                return;
+            }
+            var name = split[1];
+            _field = type.RTGetField(name);
+        }
 
-		public FieldInfo Get(){
-			return _field;
-		}
-	}
+        public SerializedFieldInfo() { }
+        public SerializedFieldInfo(FieldInfo info) {
+            _field = info;
+        }
+
+        public FieldInfo Get() {
+            return _field;
+        }
+    }
 }

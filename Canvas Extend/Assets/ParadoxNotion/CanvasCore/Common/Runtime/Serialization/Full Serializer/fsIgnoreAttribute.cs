@@ -1,10 +1,9 @@
 ﻿using System;
 
-namespace ParadoxNotion.Serialization.FullSerializer {
-    /// <summary>
+namespace ParadoxNotion.Serialization.FullSerializer
+{
+
     /// The given property or field annotated with [JsonIgnore] will not be serialized.
-    /// </summary>
-    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
-    public sealed class fsIgnoreAttribute : Attribute {
-    }
+    [AttributeUsage(AttributeTargets.Field)]
+    public sealed class fsIgnoreAttribute : Attribute { }
 }

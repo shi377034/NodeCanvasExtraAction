@@ -7,21 +7,23 @@ using UnityEditor;
 using UnityEngine;
 using System.Linq;
 
-namespace NodeCanvas.Editor{
+namespace NodeCanvas.Editor
+{
 
-	[CustomEditor(typeof(DialogueTreeController))]
-	public class DialogueTreeControllerInspector : GraphOwnerInspector {
+    [CustomEditor(typeof(DialogueTreeController))]
+    public class DialogueTreeControllerInspector : GraphOwnerInspector
+    {
 
-		private DialogueTreeController controller{
-			get {return target as DialogueTreeController; }
-		}
+        private DialogueTreeController controller {
+            get { return target as DialogueTreeController; }
+        }
 
-		protected override void OnExtraOptions(){
-			if (controller.graph != null){
-				DialogueTreeInspector.ShowActorParameters( (DialogueTree)controller.graph );
-			}
-		}
-	}
+        protected override void OnExtraOptions() {
+            if ( controller.graph != null ) {
+                DialogueTreeInspector.ShowActorParameters((DialogueTree)controller.graph);
+            }
+        }
+    }
 }
 
 #endif

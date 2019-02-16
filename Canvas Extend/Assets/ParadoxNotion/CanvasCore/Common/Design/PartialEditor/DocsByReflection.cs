@@ -13,37 +13,38 @@ namespace ParadoxNotion.Design
 {
 
     /// Utility class to provide documentation for various types where available with the assembly
-    public static class DocsByReflection {
+    public static class DocsByReflection
+    {
 
-        
+
         //PARADOX NOTION ADDITION
         ///----------------------------------------------------------------------------------------------
         private static Dictionary<MemberInfo, XmlElement> cachedElements = new Dictionary<MemberInfo, XmlElement>();
         private static Dictionary<MemberInfo, string> cachedSummaries = new Dictionary<MemberInfo, string>();
 
         ///Returns a cached XML elements for member
-        public static XmlElement GetXmlElementForMember(MemberInfo memberInfo){
+        public static XmlElement GetXmlElementForMember(MemberInfo memberInfo) {
 
-            if (memberInfo is MethodInfo){
+            if ( memberInfo is MethodInfo ) {
                 var method = (MethodInfo)memberInfo;
-                if (method.IsPropertyAccessor()){
+                if ( method.IsPropertyAccessor() ) {
                     memberInfo = method.GetAccessorProperty();
                 }
             }
 
-            if (memberInfo == null){
+            if ( memberInfo == null ) {
                 return null;
             }
 
             XmlElement element;
-            if (cachedElements.TryGetValue(memberInfo, out element)){
+            if ( cachedElements.TryGetValue(memberInfo, out element) ) {
                 return element;
             }
 
-            if (memberInfo is MethodInfo){
-                element = XMLFromMember( (MethodInfo)memberInfo );
-            } else if (memberInfo is Type){
-                element = XMLFromType( (Type)memberInfo );
+            if ( memberInfo is MethodInfo ) {
+                element = XMLFromMember((MethodInfo)memberInfo);
+            } else if ( memberInfo is Type ) {
+                element = XMLFromType((Type)memberInfo);
             } else {
                 element = XMLFromMember(memberInfo);
             }
@@ -52,35 +53,35 @@ namespace ParadoxNotion.Design
         }
 
         ///Returns a chached summary info for member
-        public static string GetMemberSummary(MemberInfo memberInfo){
+        public static string GetMemberSummary(MemberInfo memberInfo) {
             string result;
-            if (cachedSummaries.TryGetValue(memberInfo, out result)){
+            if ( cachedSummaries.TryGetValue(memberInfo, out result) ) {
                 return result;
             }
             var element = GetXmlElementForMember(memberInfo);
-            return cachedSummaries[memberInfo] = (element != null? element["summary"].InnerText.Trim() : "No Documentation Found");
+            return cachedSummaries[memberInfo] = ( element != null ? element["summary"].InnerText.Trim() : "No Documentation Found" );
         }
 
         ///Returns a chached return info for method
-        public static string GetMethodReturn(MethodBase method){
+        public static string GetMethodReturn(MethodBase method) {
             var element = GetXmlElementForMember(method);
-            return element != null? element["returns"].InnerText.Trim() : null;
+            return element != null ? element["returns"].InnerText.Trim() : null;
         }
 
         ///Returns a semi-chached method parameter info for method
-        public static string GetMethodParameter(MethodBase method, ParameterInfo parameter){ return GetMethodParameter(method, parameter.Name); }
+        public static string GetMethodParameter(MethodBase method, ParameterInfo parameter) { return GetMethodParameter(method, parameter.Name); }
         ///Returns a semi-chached method parameter info for method
-        public static string GetMethodParameter(MethodBase method, string parameterName){
+        public static string GetMethodParameter(MethodBase method, string parameterName) {
             var methodElement = GetXmlElementForMember(method);
-            if (methodElement != null){
-                foreach(var element in methodElement){
+            if ( methodElement != null ) {
+                foreach ( var element in methodElement ) {
                     var xmlElement = element as XmlElement;
-                    if (xmlElement == null){ continue; }
+                    if ( xmlElement == null ) { continue; }
                     var found = xmlElement.Attributes["name"];
-                    if (found != null && found.Value == parameterName){
+                    if ( found != null && found.Value == parameterName ) {
                         return xmlElement.InnerText.Trim();
                     }
-                }                
+                }
             }
             return null;
         }
@@ -93,14 +94,11 @@ namespace ParadoxNotion.Design
         /// </summary>
         /// <param name="methodInfo">The MethodInfo (reflection data ) of the member to find documentation for</param>
         /// <returns>The XML fragment describing the method</returns>
-        public static XmlElement XMLFromMember(MethodInfo methodInfo)
-        {
+        public static XmlElement XMLFromMember(MethodInfo methodInfo) {
             // Calculate the parameter string as this is in the member name in the XML
             string parametersString = "";
-            foreach (ParameterInfo parameterInfo in methodInfo.GetParameters())
-            {
-                if (parametersString.Length > 0)
-                {
+            foreach ( ParameterInfo parameterInfo in methodInfo.GetParameters() ) {
+                if ( parametersString.Length > 0 ) {
                     parametersString += ",";
                 }
 
@@ -108,7 +106,7 @@ namespace ParadoxNotion.Design
             }
 
             //AL: 15.04.2008 ==> BUG-FIX remove �()� if parametersString is empty
-            if (parametersString.Length > 0){
+            if ( parametersString.Length > 0 ) {
                 return XMLFromName(methodInfo.DeclaringType, 'M', methodInfo.Name + "(" + parametersString + ")");
             } else {
                 return XMLFromName(methodInfo.DeclaringType, 'M', methodInfo.Name);
@@ -120,8 +118,7 @@ namespace ParadoxNotion.Design
         /// </summary>
         /// <param name="memberInfo">The MemberInfo (reflection data) or the member to find documentation for</param>
         /// <returns>The XML fragment describing the member</returns>
-        public static XmlElement XMLFromMember(MemberInfo memberInfo)
-        {
+        public static XmlElement XMLFromMember(MemberInfo memberInfo) {
             // First character [0] of member type is prefix character in the name in the XML
             return XMLFromName(memberInfo.DeclaringType, memberInfo.MemberType.ToString()[0], memberInfo.Name);
         }
@@ -131,8 +128,7 @@ namespace ParadoxNotion.Design
         /// </summary>
         /// <param name="type">Type to find the documentation for</param>
         /// <returns>The XML fragment that describes the type</returns>
-        public static XmlElement XMLFromType(Type type)
-        {
+        public static XmlElement XMLFromType(Type type) {
             // Prefix in type names is T
             return XMLFromName(type, 'T', "");
         }
@@ -145,34 +141,28 @@ namespace ParadoxNotion.Design
         /// <param name="prefix">The prefix as seen in the name attribute in the documentation XML</param>
         /// <param name="name">Where relevant, the full name qualifier for the element</param>
         /// <returns>The member that has a name that describes the specified reflection element</returns>
-        private static XmlElement XMLFromName(Type type, char prefix, string name)
-        {
+        private static XmlElement XMLFromName(Type type, char prefix, string name) {
             string fullName;
 
-            if (String.IsNullOrEmpty(name))
-            {
+            if ( String.IsNullOrEmpty(name) ) {
                 fullName = prefix + ":" + type.FullName;
-            }
-            else
-            {
+            } else {
                 fullName = prefix + ":" + type.FullName + "." + name;
             }
 
             XmlDocument xmlDocument = XMLFromAssembly(type.Assembly);
-            if (xmlDocument == null){
+            if ( xmlDocument == null ) {
                 return null;
             }
 
-            foreach (var element in xmlDocument["doc"]["members"])
-            {
+            foreach ( var element in xmlDocument["doc"]["members"] ) {
                 var xmlElement = element as XmlElement;
-                if (xmlElement != null){
-                    if (xmlElement.Attributes["name"] == null){
+                if ( xmlElement != null ) {
+                    if ( xmlElement.Attributes["name"] == null ) {
                         continue;
                     }
 
-                    if (xmlElement.Attributes["name"].Value.Equals(fullName))
-                    {
+                    if ( xmlElement.Attributes["name"].Value.Equals(fullName) ) {
                         return xmlElement;
                     }
                 }
@@ -198,25 +188,20 @@ namespace ParadoxNotion.Design
         /// <returns>The XML document</returns>
         /// <remarks>This version uses a cache to preserve the assemblies, so that 
         /// the XML file is not loaded and parsed on every single lookup</remarks>
-        public static XmlDocument XMLFromAssembly(Assembly assembly)
-        {
-            if (failCache.ContainsKey(assembly))
-            {
+        public static XmlDocument XMLFromAssembly(Assembly assembly) {
+            if ( failCache.ContainsKey(assembly) ) {
                 return null;
             }
 
-            try
-            {
-                if (!cache.ContainsKey(assembly))
-                {
+            try {
+                if ( !cache.ContainsKey(assembly) ) {
                     // load the docuemnt into the cache
                     cache[assembly] = XMLFromAssemblyNonCached(assembly);
                 }
 
                 return cache[assembly];
             }
-            catch (Exception exception)
-            {
+            catch ( Exception exception ) {
                 failCache[assembly] = exception;
                 return null;
             }
@@ -227,31 +212,25 @@ namespace ParadoxNotion.Design
         /// </summary>
         /// <param name="assembly">The assembly to find the XML document for</param>
         /// <returns>The XML document</returns>
-        private static XmlDocument XMLFromAssemblyNonCached(Assembly assembly)
-        {
+        private static XmlDocument XMLFromAssemblyNonCached(Assembly assembly) {
             string assemblyFilename = assembly.CodeBase;
 
             const string prefix = "file:///";
 
-            if (assemblyFilename.StartsWith(prefix))
-            {
+            if ( assemblyFilename.StartsWith(prefix) ) {
                 StreamReader streamReader;
 
-                try
-                {
+                try {
                     streamReader = new StreamReader(Path.ChangeExtension(assemblyFilename.Substring(prefix.Length), ".xml"));
                 }
-                catch
-                {
+                catch {
                     return null;
                 }
 
                 XmlDocument xmlDocument = new XmlDocument();
                 xmlDocument.Load(streamReader);
                 return xmlDocument;
-            }
-            else
-            {
+            } else {
                 return null;
             }
         }

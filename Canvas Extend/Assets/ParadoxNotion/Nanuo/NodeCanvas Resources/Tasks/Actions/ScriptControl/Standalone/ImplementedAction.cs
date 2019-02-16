@@ -35,7 +35,7 @@ namespace NodeCanvas.Tasks.Actions{
 				if (targetMethod == null){
 					return string.Format("<color=#ff6457>* {0} *</color>", functionWrapper.GetMethodString() );
 				}
-				var mInfo = targetMethod.IsStatic? targetMethod.RTReflectedType().FriendlyName() : target.ToString();
+				var mInfo = targetMethod.IsStatic? targetMethod.RTReflectedOrDeclaredType().FriendlyName() : target.ToString();
 				return string.Format("[ {0}.{1}({2}) ]", mInfo, targetMethod.Name, functionWrapper.GetVariables().Length == 2? functionWrapper.GetVariables()[1].ToString() : "" );
 			}
 		}
@@ -122,7 +122,7 @@ namespace NodeCanvas.Tasks.Actions{
 			if (targetMethod != null){
                 if (!targetMethod.IsStatic) NodeCanvas.Editor.BBParameterEditor.ParameterField("Instance", target, true);
                 GUILayout.BeginVertical("box");
-				UnityEditor.EditorGUILayout.LabelField("Type", targetMethod.RTReflectedType().FriendlyName());
+				UnityEditor.EditorGUILayout.LabelField("Type", targetMethod.RTReflectedOrDeclaredType().FriendlyName());
 				UnityEditor.EditorGUILayout.LabelField("Selected Action Method:", targetMethod.Name);
 				GUILayout.EndVertical();
 				
