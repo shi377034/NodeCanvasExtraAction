@@ -75,7 +75,7 @@ namespace NodeCanvas.StateMachines{
 
 			FSM instance = null;
 			if (!instances.TryGetValue(nestedFSM, out instance)){
-				instance = Graph.Clone<FSM>(nestedFSM);
+				instance = Graph.Clone<FSM>(nestedFSM,graph.parentGraph);
 				instances[nestedFSM] = instance;
 			}
 

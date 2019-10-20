@@ -128,7 +128,7 @@ namespace NodeCanvas.StateMachines{
 
 			BehaviourTree instance = null;
 			if (!instances.TryGetValue(nestedBT, out instance)){
-				instance = Graph.Clone<BehaviourTree>(nestedBT);
+				instance = Graph.Clone<BehaviourTree>(nestedBT,graph.parentGraph);
 				instances[nestedBT] = instance;
 			}
 
