@@ -210,8 +210,15 @@ namespace ParadoxNotion.Design
 
             var sb = new StringBuilder();
             sb.AppendLine("<linker>");
+
             sb.AppendLine("\t<assembly fullname=\"Assembly-CSharp\" preserve=\"all\">");
             sb.AppendLine("\t</assembly>");
+
+            ///get assembly from a common paradoxnotion *runtime* type
+            var paradoxAsmName = typeof(ParadoxNotion.Serialization.JSONSerializer).Assembly.GetName().Name;
+            sb.AppendLine(string.Format("\t<assembly fullname=\"{0}\" preserve=\"all\">", paradoxAsmName));
+            sb.AppendLine("\t</assembly>");
+
             foreach ( var pair in pairs ) {
                 sb.AppendLine(string.Format("\t<assembly fullname=\"{0}\">", pair.Key));
                 foreach ( var type in pair.Value ) {
@@ -220,6 +227,7 @@ namespace ParadoxNotion.Design
                 sb.AppendLine("\t</assembly>");
             }
             sb.AppendLine("</linker>");
+
             File.WriteAllText(path, sb.ToString());
         }
     }

@@ -100,7 +100,7 @@ namespace ParadoxNotion.Services
                         break;
                     }
                 }
-                //if log is handled, don't forward to unity console
+                //if log is handled, don't forward to unity console unless its an exception
                 if ( handled && type != LogType.Exception ) {
                     return;
                 }

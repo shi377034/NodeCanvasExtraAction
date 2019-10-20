@@ -87,7 +87,7 @@ namespace NodeCanvas.Tasks.Conditions
             if ( checkValue.varType == typeof(int) ) {
                 return OperationTools.Compare((int)functionWrapper.Call(), (int)checkValue.value, comparison);
             }
-            return object.Equals(functionWrapper.Call(), checkValue.value);
+            return ObjectUtils.TrueEquals(functionWrapper.Call(), checkValue.value);
         }
 
         void SetMethod(MethodInfo method) {

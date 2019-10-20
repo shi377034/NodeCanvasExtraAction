@@ -25,7 +25,12 @@ namespace ParadoxNotion.Serialization
 
         public override fsResult TrySerialize(object instance, out fsData serialized, Type storageType) {
 
-            var database = Serializer.Context.Get<List<UnityEngine.Object>>();
+            var database = Serializer.ReferencesDatabase;
+            if ( database == null ) {
+                serialized = null;
+                return fsResult.Warn("No database references provided for serialization");
+            }
+
             var o = instance as UnityEngine.Object;
 
             //for null store 0
@@ -61,11 +66,15 @@ namespace ParadoxNotion.Serialization
 
         public override fsResult TryDeserialize(fsData data, ref object instance, Type storageType) {
 
-            var database = Serializer.Context.Get<List<UnityEngine.Object>>();
+            var database = Serializer.ReferencesDatabase;
+            if ( database == null ) {
+                return fsResult.Warn("A Unity Object reference has not been deserialized because no database references was provided.");
+            }
+
             var index = (int)data.AsInt64;
 
             if ( index >= database.Count ) {
-                return fsResult.Warn("A Unity Object reference has not been deserialized");
+                return fsResult.Warn("A Unity Object reference has not been deserialized because no database entry was found in provided database references.");
             }
 
             var reference = database[index];

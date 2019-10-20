@@ -6,8 +6,9 @@ using UnityEngine;
 namespace NodeCanvas.Tasks.Actions
 {
 
-    [Name("Set Visibility")]
+    [Name("Set Active")]
     [Category("GameObject")]
+    [Description("Set the gameobject active state.")]
     public class SetObjectActive : ActionTask<Transform>
     {
 

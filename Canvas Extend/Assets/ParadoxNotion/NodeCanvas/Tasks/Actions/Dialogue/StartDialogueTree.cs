@@ -16,15 +16,22 @@ namespace NodeCanvas.Tasks.Actions
         public BBParameter<DialogueTreeController> dialogueTreeController;
         public bool waitActionFinish = true;
 
+        public bool isPrefab;
+
+        private DialogueTreeController instance;
+
         protected override string info {
             get { return string.Format("Start Dialogue {0}", dialogueTreeController); }
         }
 
         protected override void OnExecute() {
+
+            instance = isPrefab ? GameObject.Instantiate(dialogueTreeController.value) : dialogueTreeController.value;
+
             if ( waitActionFinish ) {
-                dialogueTreeController.value.StartDialogue(agent, EndAction);
+                instance.StartDialogue(agent, (success) => { if ( isPrefab ) { Object.Destroy(instance.gameObject); } EndAction(success); });
             } else {
-                dialogueTreeController.value.StartDialogue(agent);
+                instance.StartDialogue(agent, (success) => { if ( isPrefab ) Object.Destroy(instance.gameObject); });
                 EndAction();
             }
         }

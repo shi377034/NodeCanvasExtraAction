@@ -269,7 +269,7 @@ namespace NodeCanvas.Framework
             get
             {
                 var _val = objectValue;
-                return object.Equals(_val, null) || ( _val is UnityEngine.Object && _val as UnityEngine.Object == null );
+                return ObjectUtils.TrueEquals(_val, null);
             }
         }
 

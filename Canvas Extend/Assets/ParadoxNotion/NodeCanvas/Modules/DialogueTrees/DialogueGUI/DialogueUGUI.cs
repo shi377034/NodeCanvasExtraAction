@@ -34,6 +34,7 @@ namespace NodeCanvas.DialogueTrees.UI.Examples
         public RectTransform waitInputIndicator;
         public SubtitleDelays subtitleDelays = new SubtitleDelays();
         public List<AudioClip> typingSounds;
+        private AudioSource playSource;
 
         //Group...
         [Header("Multiple Choice")]
@@ -79,6 +80,8 @@ namespace NodeCanvas.DialogueTrees.UI.Examples
         void OnDialoguePaused(DialogueTree dlg) {
             subtitlesGroup.gameObject.SetActive(false);
             optionsGroup.gameObject.SetActive(false);
+            StopAllCoroutines();
+            if ( playSource != null ) playSource.Stop();
         }
 
         void OnDialogueFinished(DialogueTree dlg) {
@@ -92,6 +95,8 @@ namespace NodeCanvas.DialogueTrees.UI.Examples
                 }
                 cachedButtons = null;
             }
+            StopAllCoroutines();
+            if ( playSource != null ) playSource.Stop();
         }
 
 
@@ -116,7 +121,7 @@ namespace NodeCanvas.DialogueTrees.UI.Examples
 
             if ( audio != null ) {
                 var actorSource = actor.transform != null ? actor.transform.GetComponent<AudioSource>() : null;
-                var playSource = actorSource != null ? actorSource : localSource;
+                playSource = actorSource != null ? actorSource : localSource;
                 playSource.clip = audio;
                 playSource.Play();
                 actorSpeech.text = text;

@@ -21,10 +21,7 @@ namespace NodeCanvas.Tasks.Conditions
         }
 
         protected override bool OnCheck() {
-            if ( typeof(Object).RTIsAssignableFrom(typeof(T)) ) { //special treat for unity objects
-                return ( valueA.value as Object ) == ( valueB.value as Object );
-            }
-            return Equals(valueA.value, valueB.value);
+            return ObjectUtils.TrueEquals(valueA.value, valueB.value);
         }
     }
 }

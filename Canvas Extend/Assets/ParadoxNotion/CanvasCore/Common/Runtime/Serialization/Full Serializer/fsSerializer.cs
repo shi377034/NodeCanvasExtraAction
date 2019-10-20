@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using ParadoxNotion.Serialization.FullSerializer.Internal;
+using ParadoxNotion.Serialization.FullSerializer.Internal.DirectConverters;
 
 namespace ParadoxNotion.Serialization.FullSerializer
 {
@@ -149,7 +150,6 @@ namespace ParadoxNotion.Serialization.FullSerializer
         /// lookup. This is potentially important to perf when there are a ton of direct
         /// converters.
         private readonly Dictionary<Type, fsDirectConverter> _availableDirectConverters;
-        private readonly static Type[] _directConverterTypes;
 
         /// Processors that are available.
         private readonly List<fsObjectProcessor> _processors;
@@ -160,9 +160,6 @@ namespace ParadoxNotion.Serialization.FullSerializer
         private readonly fsCyclicReferenceManager _references;
         private readonly fsLazyCycleDefinitionWriter _lazyReferenceWriter;
 
-        static fsSerializer() {
-            _directConverterTypes = ReflectionTools.GetImplementationsOf(typeof(fsDirectConverter));
-        }
 
         public fsSerializer() {
             _cachedOverrideConverterInstances = new Dictionary<Type, fsBaseConverter>();
@@ -190,17 +187,22 @@ namespace ParadoxNotion.Serialization.FullSerializer
 
             _processors = new List<fsObjectProcessor>();
 
-            Context = new fsContext();
             Config = new fsConfig();
 
-            //create instances of direct converters
-            for ( var i = 0; i < _directConverterTypes.Length; i++ ) {
-                AddConverter((fsDirectConverter)Activator.CreateInstance(_directConverterTypes[i]));
-            }
+            //DirectConverters. Add manually for performance
+            AddConverter(new AnimationCurve_DirectConverter());
+            AddConverter(new Bounds_DirectConverter());
+            AddConverter(new GUIStyleState_DirectConverter());
+            AddConverter(new GUIStyle_DirectConverter());
+            AddConverter(new Gradient_DirectConverter());
+            AddConverter(new Keyframe_DirectConverter());
+            AddConverter(new LayerMask_DirectConverter());
+            AddConverter(new RectOffset_DirectConverter());
+            AddConverter(new Rect_DirectConverter());
         }
 
-        /// A context object that fsConverters can use to customize how they operate.
-        public fsContext Context;
+        /// A UnityObject references database for serializtion/deserialization
+        public List<UnityEngine.Object> ReferencesDatabase;
         /// Configuration options. Also see fsGlobalConfig.
         public fsConfig Config;
 
@@ -349,9 +351,16 @@ namespace ParadoxNotion.Serialization.FullSerializer
                 return fsResult.Success;
             }
 
-            _references.Enter();
-            var result = Internal_Serialize(storageType, overrideConverterType, instance, out data);
-            if ( _references.Exit() ) { _lazyReferenceWriter.Clear(); }
+            fsResult result;
+
+            try {
+                _references.Enter();
+                result = Internal_Serialize(storageType, overrideConverterType, instance, out data);
+            }
+
+            finally {
+                if ( _references.Exit() ) { _lazyReferenceWriter.Clear(); }
+            }
 
             Invoke_OnAfterSerialize(processors, storageType, instance, ref data);
             return result;
@@ -437,15 +446,16 @@ namespace ParadoxNotion.Serialization.FullSerializer
                 List<fsObjectProcessor> processors;
                 var r = Internal_Deserialize(overrideConverterType, data, storageType, ref result, out processors);
                 if ( r.Succeeded ) { Invoke_OnAfterDeserialize(processors, storageType, result); }
-
-                _references.Exit();
                 return r;
             }
 
             catch ( Exception e ) {
                 ParadoxNotion.Services.Logger.LogException(e, "Deserialization", result);
-                _references.Exit();
                 return fsResult.Fail(e.Message);
+            }
+
+            finally {
+                _references.Exit();
             }
         }
 
@@ -453,11 +463,13 @@ namespace ParadoxNotion.Serialization.FullSerializer
         fsResult Internal_Deserialize(Type overrideConverterType, fsData data, Type storageType, ref object result, out List<fsObjectProcessor> processors) {
             //$ref encountered. Do before inheritance.
             if ( IsObjectReference(data) ) {
-                var refId = int.Parse(data.AsDictionary[KEY_OBJECT_REFERENCE].AsString);
+                int refId = int.Parse(data.AsDictionary[KEY_OBJECT_REFERENCE].AsString);
                 result = _references.GetReferenceObject(refId);
                 processors = GetProcessors(result.GetType());
                 return fsResult.Success;
             }
+
+            var deserializeResult = fsResult.Success;
 
             // We wait until here to actually Invoke_OnBeforeDeserialize because we do not
             // have the correct set of processors to invoke until *after* we have resolved
@@ -474,27 +486,33 @@ namespace ParadoxNotion.Serialization.FullSerializer
             if ( IsTypeSpecified(data) ) {
                 var typeNameData = data.AsDictionary[KEY_INSTANCE_TYPE];
 
-                if ( !typeNameData.IsString ) {
-                    return fsResult.Fail(string.Format("{0} value must be a string", KEY_INSTANCE_TYPE));
-                }
+                do {
+                    if ( !typeNameData.IsString ) {
+                        deserializeResult.AddMessage(string.Format("{0} value must be a string", KEY_INSTANCE_TYPE));
+                        break;
+                    }
 
-                var typeName = typeNameData.AsString;
-                var type = ReflectionTools.GetType(typeName, storageType);
+                    var typeName = typeNameData.AsString;
+                    var type = ReflectionTools.GetType(typeName, storageType);
 
-                if ( type == null ) {
-                    return fsResult.Fail(string.Format("{0} can not be resolved", typeName));
-                }
+                    if ( type == null ) {
+                        deserializeResult.AddMessage(string.Format("{0} type can not be resolved", typeName));
+                        break;
+                    }
 
-                if ( !storageType.IsAssignableFrom(type) ) {
-                    return fsResult.Fail(string.Format("{0} can't hold and instance of {1}", storageType, type));
-                }
+                    if ( !storageType.IsAssignableFrom(type) ) {
+                        deserializeResult.AddMessage(string.Format("Ignoring type specifier. Field or type {0} can't hold and instance of type {1}", storageType, type));
+                        break;
+                    }
 
-                objectType = type;
+                    objectType = type;
+
+                } while ( false );
             }
 
             var converter = GetConverter(objectType, overrideConverterType);
             if ( converter == null ) {
-                return fsResult.Warn(string.Format("No Converter for {0}", objectType));
+                return fsResult.Warn(string.Format("No Converter available for {0}", objectType));
             }
 
             // Construct an object instance if we don't have one already using actual objectType
@@ -517,7 +535,7 @@ namespace ParadoxNotion.Serialization.FullSerializer
             }
 
             // must pass actual objectType instead of storageType
-            return converter.TryDeserialize(data, ref result, objectType);
+            return deserializeResult += converter.TryDeserialize(data, ref result, objectType);
         }
 
     }

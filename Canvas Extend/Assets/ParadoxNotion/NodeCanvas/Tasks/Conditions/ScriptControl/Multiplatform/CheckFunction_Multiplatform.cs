@@ -23,6 +23,8 @@ namespace NodeCanvas.Tasks.Conditions
         [SerializeField]
         protected List<BBObjectParameter> parameters = new List<BBObjectParameter>();
         [SerializeField]
+        protected List<bool> parameterIsByRef = new List<bool>();
+        [SerializeField]
         [BlackboardOnly]
         protected BBObjectParameter checkValue;
         [SerializeField]
@@ -80,6 +82,10 @@ namespace NodeCanvas.Tasks.Conditions
                 args = new object[parameters.Count];
             }
 
+            if ( parameterIsByRef.Count != parameters.Count ) {
+                parameterIsByRef = parameters.Select(p => false).ToList();
+            }
+
             return null;
         }
 
@@ -91,31 +97,46 @@ namespace NodeCanvas.Tasks.Conditions
             }
 
             var instance = targetMethod.IsStatic ? null : agent;
+            bool result;
             if ( checkValue.varType == typeof(float) ) {
-                return OperationTools.Compare((float)targetMethod.Invoke(instance, args), (float)checkValue.value, comparison, 0.05f);
+                result = OperationTools.Compare((float)targetMethod.Invoke(instance, args), (float)checkValue.value, comparison, 0.05f);
+            } else if ( checkValue.varType == typeof(int) ) {
+                result = OperationTools.Compare((int)targetMethod.Invoke(instance, args), (int)checkValue.value, comparison);
+            } else {
+                result = ObjectUtils.TrueEquals(targetMethod.Invoke(instance, args), checkValue.value);
             }
-            if ( checkValue.varType == typeof(int) ) {
-                return OperationTools.Compare((int)targetMethod.Invoke(instance, args), (int)checkValue.value, comparison);
+
+            for ( var i = 0; i < parameters.Count; i++ ) {
+                if ( parameterIsByRef[i] ) {
+                    parameters[i].value = args[i];
+                }
             }
-            return object.Equals(targetMethod.Invoke(instance, args), checkValue.value);
+
+            return result;
         }
 
 
         void SetMethod(MethodInfo method) {
-            if ( method != null ) {
-                this.method = new SerializedMethodInfo(method);
-                this.parameters.Clear();
-                foreach ( var p in method.GetParameters() ) {
-                    var newParam = new BBObjectParameter(p.ParameterType) { bb = blackboard };
-                    if ( p.IsOptional ) {
-                        newParam.value = p.DefaultValue;
-                    }
-                    parameters.Add(newParam);
-                }
-
-                this.checkValue = new BBObjectParameter(method.ReturnType) { bb = blackboard };
-                comparison = CompareMethod.EqualTo;
+            if ( method == null ) {
+                return;
             }
+            this.method = new SerializedMethodInfo(method);
+            this.parameters.Clear();
+            this.parameterIsByRef.Clear();
+            var methodParameters = method.GetParameters();
+            for ( var i = 0; i < methodParameters.Length; i++ ) {
+                var p = methodParameters[i];
+                var pType = p.ParameterType;
+                var newParam = new BBObjectParameter(pType.IsByRef ? pType.GetElementType() : pType) { bb = blackboard };
+                if ( p.IsOptional ) {
+                    newParam.value = p.DefaultValue;
+                }
+                parameters.Add(newParam);
+                parameterIsByRef.Add(pType.IsByRef);
+            }
+
+            this.checkValue = new BBObjectParameter(method.ReturnType) { bb = blackboard };
+            comparison = CompareMethod.EqualTo;
         }
 
 

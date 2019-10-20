@@ -145,6 +145,7 @@ namespace NodeCanvas.Tasks.Actions
             }
             this.method = new SerializedMethodInfo(method);
             this.parameters.Clear();
+            this.parameterIsByRef.Clear();
             var methodParameters = method.GetParameters();
             for ( var i = 0; i < methodParameters.Length; i++ ) {
                 var p = methodParameters[i];

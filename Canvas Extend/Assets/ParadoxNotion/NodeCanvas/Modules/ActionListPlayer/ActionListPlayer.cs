@@ -10,6 +10,8 @@ namespace NodeCanvas
     public class ActionListPlayer : MonoBehaviour, ITaskSystem, ISerializationCallbackReceiver
     {
 
+        public bool playOnAwake;
+
         [SerializeField]
         private string _serializedList;
         [SerializeField]
@@ -91,6 +93,9 @@ namespace NodeCanvas
 
         void Awake() {
             SendTaskOwnerDefaults();
+            if ( playOnAwake ) {
+                Play();
+            }
         }
 
         [ContextMenu("Play")]

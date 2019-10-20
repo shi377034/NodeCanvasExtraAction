@@ -155,7 +155,7 @@ namespace ParadoxNotion
             for ( var i = 0; i < allTypes.Length; i++ ) {
                 var t = allTypes[i];
                 var att = t.RTGetAttribute<Serialization.DeserializeFromAttribute>(false);
-                if ( att != null && att.previousTypeFullNames.Any(n => n == typeName) ) {
+                if ( att != null && att.previousTypeFullName == typeName ) {
                     return t;
                 }
             }

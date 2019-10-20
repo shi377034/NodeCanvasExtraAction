@@ -196,6 +196,7 @@ namespace NodeCanvas.Editor
             GUI.color = Color.white;
 
             if ( GUI.changed || e.rawType == EventType.MouseUp ) {
+                Undo.RecordObject(contextParent, "Blackboard Change");
                 EditorApplication.delayCall += () => { ResetPick(); };
                 //reconstruct the dictionary
                 try { bb.variables = tempList.ToDictionary(d => d.name, d => d); }
@@ -226,7 +227,11 @@ namespace NodeCanvas.Editor
                 GUI.color = Color.white;
             } else {
                 GUI.enabled = !data.isProtected;
-                data.value = VariableField(data, contextParent, layoutOptions);
+                var newVal = VariableField(data, contextParent, layoutOptions);
+                if ( data.value != newVal ) {
+                    Undo.RecordObject(contextParent, "Variable Change");
+                    data.value = newVal;
+                }
                 GUI.enabled = true;
                 GUI.backgroundColor = Color.white;
             }

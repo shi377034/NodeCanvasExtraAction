@@ -50,10 +50,11 @@ namespace ParadoxNotion.Serialization
         public static string Serialize(Type type, object instance, bool pretyJson = false, List<UnityEngine.Object> objectReferences = null) {
 
             lock ( serializerLock ) {
+
                 //set the objectReferences context
                 if ( objectReferences != null ) {
                     objectReferences.Clear(); //we clear the list since it will be populated by the converter.
-                    serializer.Context.Set<List<UnityEngine.Object>>(objectReferences);
+                    serializer.ReferencesDatabase = objectReferences;
                 }
 
                 //serialize the data
@@ -93,9 +94,10 @@ namespace ParadoxNotion.Serialization
         public static object Internal_Deserialize(Type type, string json, List<UnityEngine.Object> objectReferences, object instance) {
 
             lock ( serializerLock ) {
+
                 //set the objectReferences context from where unity references will read
                 if ( objectReferences != null ) {
-                    serializer.Context.Set<List<UnityEngine.Object>>(objectReferences);
+                    serializer.ReferencesDatabase = objectReferences;
                 }
 
                 fsData data = null;

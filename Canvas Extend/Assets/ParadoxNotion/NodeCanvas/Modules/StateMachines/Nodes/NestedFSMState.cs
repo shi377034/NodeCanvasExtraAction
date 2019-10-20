@@ -42,6 +42,7 @@ namespace NodeCanvas.StateMachines
 
             currentInstance = CheckInstance();
             currentInstance.StartGraph(graphAgent, graphBlackboard, false, Finish);
+            OnUpdate();
         }
 
         protected override void OnUpdate() {

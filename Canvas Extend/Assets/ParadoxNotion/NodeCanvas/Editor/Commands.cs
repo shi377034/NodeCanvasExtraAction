@@ -48,7 +48,7 @@ namespace NodeCanvas.Editor
 
         [MenuItem("Tools/ParadoxNotion/NodeCanvas/Welcome Window")]
         public static void ShowWelcome() {
-            WelcomeWindow.ShowWindow(null);
+            WelcomeWindow.ShowWindow(typeof(NodeCanvas.BehaviourTrees.BehaviourTree));
         }
 
         [MenuItem("Tools/ParadoxNotion/NodeCanvas/Visit Website")]

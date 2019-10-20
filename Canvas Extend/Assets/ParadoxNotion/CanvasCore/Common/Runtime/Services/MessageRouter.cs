@@ -112,6 +112,53 @@ namespace ParadoxNotion.Services
         }
 
         //-------------------------------------------------
+        void OnMouseDown() {
+            Dispatch("OnMouseDown");
+        }
+
+        void OnMouseDrag() {
+            Dispatch("OnMouseDrag");
+        }
+
+        void OnMouseEnter() {
+            Dispatch("OnMouseEnter");
+        }
+
+        void OnMouseExit() {
+            Dispatch("OnMouseExit");
+        }
+
+        void OnMouseOver() {
+            Dispatch("OnMouseOver");
+        }
+
+        void OnMouseUp() {
+            Dispatch("OnMouseUp");
+        }
+
+        //-------------------------------------------------
+        void OnEnable() {
+            Dispatch("OnEnable");
+        }
+
+        void OnDisable() {
+            Dispatch("OnDisable");
+        }
+
+        void OnDestroy() {
+            Dispatch("OnDestroy");
+        }
+
+        //-------------------------------------------------
+        void OnTransformChildrenChanged() {
+            Dispatch("OnTransformChildrenChanged");
+        }
+
+        void OnTransformParentChanged() {
+            Dispatch("OnTransformParentChanged");
+        }
+
+        //-------------------------------------------------
         void OnAnimatorIK(int layerIndex) {
             Dispatch("OnAnimatorIK", layerIndex);
         }
@@ -129,6 +176,15 @@ namespace ParadoxNotion.Services
 
         void OnBecameVisible() {
             Dispatch("OnBecameVisible");
+        }
+
+        //-------------------------------------------------
+        void OnControllerColliderHit(ControllerColliderHit hit) {
+            Dispatch("OnControllerColliderHit", hit);
+        }
+
+        void OnParticleCollision(GameObject other) {
+            Dispatch("OnParticleCollision", other);
         }
 
         //-------------------------------------------------
@@ -181,64 +237,7 @@ namespace ParadoxNotion.Services
             Dispatch("OnTriggerStay2D", other);
         }
 
-        //-------------------------------------------------
-        void OnMouseDown() {
-            Dispatch("OnMouseDown");
-        }
-
-        void OnMouseDrag() {
-            Dispatch("OnMouseDrag");
-        }
-
-        void OnMouseEnter() {
-            Dispatch("OnMouseEnter");
-        }
-
-        void OnMouseExit() {
-            Dispatch("OnMouseExit");
-        }
-
-        void OnMouseOver() {
-            Dispatch("OnMouseOver");
-        }
-
-        void OnMouseUp() {
-            Dispatch("OnMouseUp");
-        }
-
-        //-------------------------------------------------
-        void OnControllerColliderHit(ControllerColliderHit hit) {
-            Dispatch("OnControllerColliderHit", hit);
-        }
-
-        void OnParticleCollision(GameObject other) {
-            Dispatch("OnParticleCollision", other);
-        }
-
-        //-------------------------------------------------
-        void OnEnable() {
-            Dispatch("OnEnable");
-        }
-
-        void OnDisable() {
-            Dispatch("OnDisable");
-        }
-
-        void OnDestroy() {
-            Dispatch("OnDestroy");
-        }
-
-        //-------------------------------------------------
-        void OnTransformChildrenChanged() {
-            Dispatch("OnTransformChildrenChanged");
-        }
-
-        void OnTransformParentChanged() {
-            Dispatch("OnTransformParentChanged");
-        }
-
         ///----------------------------------------------------------------------------------------------
-
 
         ///Add a listener to several messages
         public void Register(object target, params string[] messages) {

@@ -68,6 +68,7 @@ namespace NodeCanvas.StateMachines
             currentInstance.repeat = ( executionMode == BTExecutionMode.Repeat );
             currentInstance.updateInterval = 0;
             currentInstance.StartGraph(graphAgent, graphBlackboard, false, OnFinish);
+            OnUpdate();
         }
 
         protected override void OnUpdate() {

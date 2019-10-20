@@ -20,10 +20,6 @@ namespace NodeCanvas.Editor
             get { return target as Graph; }
         }
 
-        private string fileExtension {
-            get { return graph.GetType().Name.GetCapitals(); }
-        }
-
         public override void OnInspectorGUI() {
 
             UndoManager.CheckUndo(this, "Graph Inspector");

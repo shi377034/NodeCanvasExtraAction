@@ -33,9 +33,9 @@ namespace NodeCanvas.Editor
 
             var att = assetType != null ? (GraphInfoAttribute)assetType.GetCustomAttributes(typeof(GraphInfoAttribute), true).FirstOrDefault() : null;
             var packageName = att != null ? att.packageName : "NodeCanvas";
-            var docsURL = att != null ? att.docsURL : "http://nodecanvas.com";
-            var resourcesURL = att != null ? att.resourcesURL : "http://nodecanvas.com/";
-            var forumsURL = att != null ? att.forumsURL : "http://nodecanvas.com/";
+            var docsURL = att != null ? att.docsURL : "https://nodecanvas.paradoxnotion.com/documentation/";
+            var resourcesURL = att != null ? att.resourcesURL : "https://nodecanvas.paradoxnotion.com/downloads/";
+            var forumsURL = att != null ? att.forumsURL : "https://nodecanvas.paradoxnotion.com/forums-page/";
 
             var headerRect = new Rect(0, 0, paradoxHeader.width, paradoxHeader.height);
             EditorGUIUtility.AddCursorRect(headerRect, MouseCursor.Link);

@@ -87,6 +87,13 @@ namespace NodeCanvas.Framework
             get { return gameObject; }
         }
 
+        ///----------------------------------------------------------------------------------------------
+
+        [ContextMenu("Show Json")]
+        void ShowJson() { JSONSerializer.ShowData(_serializedBlackboard, this.name); }
+
+        ///----------------------------------------------------------------------------------------------
+
         ///Add a new variable of name and type
         public Variable AddVariable(string name, Type type) {
             var variable = _blackboard.AddVariable(name, type);

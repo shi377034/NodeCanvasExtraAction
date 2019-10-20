@@ -136,8 +136,6 @@ namespace NodeCanvas.StateMachines
                 if ( onStateExit != null ) {
                     onStateExit(currentState);
                 }
-                currentState.Finish();
-                currentState.Reset();
             }
 
             previousState = null;
@@ -168,7 +166,6 @@ namespace NodeCanvas.StateMachines
                     onStateExit(currentState);
                 }
 
-                currentState.Finish();
                 currentState.Reset();
 
 #if UNITY_EDITOR

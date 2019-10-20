@@ -37,7 +37,7 @@ namespace ParadoxNotion.Serialization.FullSerializer.Internal
                 bool first = true;
                 foreach ( var value in Enum.GetValues(storageType) ) {
                     long integralValue = Convert.ToInt64(value);
-                    bool isSet = ( instanceValue & integralValue ) != 0;
+                    bool isSet = ( instanceValue & integralValue ) == integralValue;
 
                     if ( isSet ) {
                         if ( first == false ) result.Append(",");

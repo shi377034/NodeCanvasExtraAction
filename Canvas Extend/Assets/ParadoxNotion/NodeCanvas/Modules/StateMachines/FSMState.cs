@@ -181,16 +181,15 @@ namespace NodeCanvas.StateMachines
 
         //OnExit...
         sealed protected override void OnReset() {
-            status = Status.Resting;
-            elapsedTime = 0;
-
             for ( int i = 0; i < outConnections.Count; i++ ) {
                 if ( ( (FSMConnection)outConnections[i] ).condition != null ) {
                     ( (FSMConnection)outConnections[i] ).condition.Disable();
                 }
             }
 
+            //call OnExit before reseting elapsedTime so that it's available in the OnExit override if needed.
             OnExit();
+            elapsedTime = 0;
         }
 
 

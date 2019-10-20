@@ -85,12 +85,26 @@ namespace ParadoxNotion.Design
                     return value;
                 }
 
-                //Auto create instance for some types
-                if ( value == null && t != typeof(object) && !t.IsAbstract && !t.IsInterface ) {
-                    if ( t.GetConstructor(Type.EmptyTypes) != null || t.IsArray ) {
-                        if ( t.IsArray ) { value = Array.CreateInstance(t.GetElementType(), 0); } else { value = Activator.CreateInstance(t); }
+                if ( t != typeof(object) && !t.IsAbstract && !t.IsInterface ) {
+                    if ( t.GetConstructor(Type.EmptyTypes) != null || t.IsArray || t.RTIsValueType() ) {
+                        if ( value == null ) {
+                            GUILayout.BeginHorizontal();
+                            EditorGUILayout.PrefixLabel(content, (GUIStyle)"button");
+                            if ( GUILayout.Button("(null) Create", GUILayout.Height(16)) ) {
+                                if ( t.IsArray ) { value = Array.CreateInstance(t.GetElementType(), 0); } else { value = Activator.CreateInstance(t); }
+                            }
+                            GUILayout.EndHorizontal();
+                            return value;
+                        }
                     }
                 }
+
+                // //Auto create instance for some types
+                // if ( value == null && t != typeof(object) && !t.IsAbstract && !t.IsInterface ) {
+                //     if ( t.GetConstructor(Type.EmptyTypes) != null || t.IsArray || t.RTIsValueType() ) {
+                //         if ( t.IsArray ) { value = Array.CreateInstance(t.GetElementType(), 0); } else { value = Activator.CreateInstance(t); }
+                //     }
+                // }
             }
 
             //Check the type

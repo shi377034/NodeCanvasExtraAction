@@ -32,30 +32,34 @@ namespace NodeCanvas.Tasks.Conditions
         protected override string info {
             get
             {
-                if ( string.IsNullOrEmpty(fieldName) )
+                if ( string.IsNullOrEmpty(fieldName) ) {
                     return "No Field Selected";
-                return string.Format("{0}.{1}{2}", agentInfo, fieldName, checkValue.varType == typeof(bool) ? "" : OperationTools.GetCompareString(comparison) + checkValue.ToString());
+                }
+                return string.Format("{0}.{1}{2}", agentInfo, fieldName, OperationTools.GetCompareString(comparison) + checkValue.ToString());
             }
         }
 
         //store the field info on agent set for performance
         protected override string OnInit() {
             field = agentType.RTGetField(fieldName);
-            if ( field == null )
+            if ( field == null ) {
                 return "Missing Field Info";
+            }
             return null;
         }
 
         //do it by invoking field
         protected override bool OnCheck() {
 
-            if ( checkValue.varType == typeof(float) )
+            if ( checkValue.varType == typeof(float) ) {
                 return OperationTools.Compare((float)field.GetValue(agent), (float)checkValue.value, comparison, 0.05f);
+            }
 
-            if ( checkValue.varType == typeof(int) )
+            if ( checkValue.varType == typeof(int) ) {
                 return OperationTools.Compare((int)field.GetValue(agent), (int)checkValue.value, comparison);
+            }
 
-            return object.Equals(field.GetValue(agent), checkValue.value);
+            return ObjectUtils.TrueEquals(field.GetValue(agent), checkValue.value);
         }
 
         ////////////////////////////////////////

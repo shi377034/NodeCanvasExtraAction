@@ -160,6 +160,8 @@ namespace NodeCanvas.Editor
                         }
                     }
                 }
+
+                // owner.blackboard = (IBlackboard)EditorGUILayout.ObjectField("Blackboard", (Blackboard)owner.blackboard, typeof(Blackboard), true);
             }
 
 

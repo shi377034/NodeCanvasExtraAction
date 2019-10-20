@@ -2,6 +2,7 @@
 
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityObject = UnityEngine.Object;
@@ -47,19 +48,63 @@ namespace ParadoxNotion.Design
             }
 
             if ( options.allowAdd ) {
-                if ( GUILayout.Button("Add Element") ) {
-                    if ( unityObject != null ) { Undo.RecordObject(unityObject, "Add Item"); }
-                    var o = argType.IsValueType ? argType.CreateObjectUninitialized() : null;
-                    if ( listType.IsArray ) {
-                        list = ReflectionTools.Resize((System.Array)list, list.Count + 1);
-                    } else {
-                        list.Add(o);
+
+                var dropRefs = DragAndDrop.objectReferences;
+
+                //Drag And Drop.
+                if ( dropRefs.Length > 0 ) {
+                    if ( dropRefs.Any(r => argType.IsAssignableFrom(r.GetType()) || ( r.GetType() == typeof(GameObject) && typeof(Component).IsAssignableFrom(argType) )) ) {
+                        var dropRect = GUILayoutUtility.GetRect(0, 20, GUILayout.ExpandWidth(true));
+                        dropRect.xMin += 5;
+                        dropRect.xMax -= 5;
+                        GUI.Box(dropRect, "", Styles.roundedBox);
+                        GUI.Box(dropRect, "Drop Here to Enlist", Styles.centerLabel);
+                        if ( dropRect.Contains(Event.current.mousePosition) ) {
+                            if ( Event.current.type == EventType.DragUpdated ) {
+                                DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
+                                Event.current.Use();
+                            }
+                            if ( Event.current.type == EventType.DragPerform ) {
+                                for ( var i = 0; i < dropRefs.Length; i++ ) {
+                                    var dropRef = dropRefs[i];
+                                    var dropRefType = dropRef.GetType();
+                                    if ( argType.IsAssignableFrom(dropRefType) ) {
+                                        if ( unityObject != null ) { Undo.RecordObject(unityObject, "Drag Add Item"); }
+                                        list.Add(dropRef);
+                                        continue;
+                                    }
+                                    if ( dropRefType == typeof(GameObject) && typeof(Component).IsAssignableFrom(argType) ) {
+                                        var componentToAdd = ( dropRef as GameObject ).GetComponent(argType);
+                                        if ( componentToAdd != null ) {
+                                            if ( unityObject != null ) { Undo.RecordObject(unityObject, "Drag Add Item"); }
+                                            list.Add(componentToAdd);
+                                        }
+                                        continue;
+                                    }
+                                }
+                                Event.current.Use();
+                            }
+                        }
                     }
-                    GUI.changed = true;
-                    if ( unityObject != null ) { EditorUtility.SetDirty(unityObject); }
-                    registeredEditorFoldouts[list] = true;
-                    return list;
                 }
+
+                //Add new default element
+                if ( dropRefs.Length == 0 ) {
+                    if ( GUILayout.Button("Add Element") ) {
+                        if ( unityObject != null ) { Undo.RecordObject(unityObject, "Add Item"); }
+                        var o = argType.IsValueType ? argType.CreateObjectUninitialized() : null;
+                        if ( listType.IsArray ) {
+                            list = ReflectionTools.Resize((System.Array)list, list.Count + 1);
+                        } else {
+                            list.Add(o);
+                        }
+                        GUI.changed = true;
+                        if ( unityObject != null ) { EditorUtility.SetDirty(unityObject); }
+                        registeredEditorFoldouts[list] = true;
+                        return list;
+                    }
+                }
+
             }
 
             if ( list.Count == 0 ) {

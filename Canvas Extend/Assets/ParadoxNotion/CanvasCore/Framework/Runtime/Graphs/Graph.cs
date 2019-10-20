@@ -104,9 +104,9 @@ namespace NodeCanvas.Framework
         ///Serialize the graph and returns the serialized json string.
         ///The provided objectReferences list will be cleared and populated with the found unity object references.
         public string Serialize(bool pretyJson, List<UnityEngine.Object> objectReferences) {
-            //if something went wrong on deserialization, dont serialize back, but rather keep what we had
+            //if something went wrong on deserialization, dont serialize back, but rather keep what we had until a deserialization attempt is successful.
             if ( _deserializationFailed ) {
-                _deserializationFailed = false;
+                Logger.Log("Due to last deserialization attempt failure, this graph is protected from changes.\nAny change you make is not saved until the graph has deserialized successfully.\nPlease try restarting Unity to attempt deserialization again.\nIf you think this is a bug, please contact support.", "Editor", this);
                 return _serializedGraph;
             }
 
@@ -135,17 +135,16 @@ namespace NodeCanvas.Framework
                 //deserialize provided serialized graph into a new GraphSerializationData object and load it
                 var data = JSONSerializer.Deserialize<GraphSerializationData>(serializedGraph, objectReferences);
                 if ( LoadGraphData(data, validate) == true ) {
-                    this._deserializationFailed = false;
                     this._serializedGraph = serializedGraph;
                     this._objectReferences = objectReferences;
+                    this._deserializationFailed = false;
                     return data;
                 }
 
-                _deserializationFailed = true;
                 return null;
             }
             catch ( System.Exception e ) {
-                Logger.LogException(e, "NodeCanvas", this);
+                Logger.LogException(e, "Serialization", this);
                 _deserializationFailed = true;
                 return null;
             }

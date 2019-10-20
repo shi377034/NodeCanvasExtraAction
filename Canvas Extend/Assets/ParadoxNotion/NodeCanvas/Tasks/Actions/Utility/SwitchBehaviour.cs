@@ -18,7 +18,6 @@ namespace NodeCanvas.Tasks.Actions
             get { return string.Format("Switch Behaviour {0}", behaviourTree); }
         }
 
-
         protected override void OnExecute() {
             agent.SwitchBehaviour(behaviourTree.value);
             EndAction();

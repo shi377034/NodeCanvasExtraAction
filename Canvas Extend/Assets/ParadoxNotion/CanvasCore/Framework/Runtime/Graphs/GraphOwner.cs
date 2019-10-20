@@ -68,7 +68,7 @@ namespace NodeCanvas.Framework
 
         ///----------------------------------------------------------------------------------------------
 
-        //Gets the instance graph for this owner of the provided graph
+        //Gets the instance graph for this owner from the provided graph
         protected Graph GetInstance(Graph originalGraph) {
 
             if ( originalGraph == null ) {
@@ -84,15 +84,14 @@ namespace NodeCanvas.Framework
             }
 #endif
 
-            //if its already an instance, return the instance
+            //if its already a stored instance, return the instance
             if ( instances.ContainsValue(originalGraph) ) {
                 return originalGraph;
             }
 
             Graph instance = null;
 
-            //if it's not an instance but rather an asset reference which has been instantiated before, return the instance stored,
-            //otherwise create and store a new instance.
+            //if it's not a strored instance create, store and return a new instance.
             if ( !instances.TryGetValue(originalGraph, out instance) ) {
                 instance = Graph.Clone<Graph>(originalGraph);
                 instances[originalGraph] = instance;
@@ -261,7 +260,7 @@ namespace NodeCanvas.Framework
         ///----------------------------------------------------------------------------------------------
 #if UNITY_EDITOR
 
-        private Graph boundGraphInstance;
+        protected Graph boundGraphInstance;
 
         ///Editor. Is the graph a bound one?
         public bool graphIsBound {
@@ -292,10 +291,9 @@ namespace NodeCanvas.Framework
             //everything here is relevant to bound graphs only
             if ( graphIsBound && !Application.isPlaying && !UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode ) {
 
-#if !UNITY_2018_3_OR_NEWER //works in 2018.3 without this code
+#if !UNITY_2018_3_OR_NEWER //not required in 2018.3+. Update from previous version. No longer store graph as sub-asset.
                 var prefabType = UnityEditor.PrefabUtility.GetPrefabType(this);
                 if ( prefabType == UnityEditor.PrefabType.Prefab ) {
-                    //Update from previous version. No longer store graph as sub-asset.
                     if ( graph != null && UnityEditor.AssetDatabase.IsSubAsset(graph) ) {
                         DestroyImmediate(graph, true);
                     }
@@ -306,17 +304,20 @@ namespace NodeCanvas.Framework
                     boundGraphInstance = (Graph)ScriptableObject.CreateInstance(graphType);
                 }
 
-#if !UNITY_2018_3_OR_NEWER //works in 2018.3 without this code
+#if !UNITY_2018_3_OR_NEWER //not required in 2018.3+
                 boundGraphInstance.hideFlags = prefabType == UnityEditor.PrefabType.Prefab ? HideFlags.HideAndDontSave : HideFlags.None;
 #endif
 
                 boundGraphInstance.Deserialize(boundGraphSerialization, false, boundGraphObjectReferences);
-                ( boundGraphInstance as UnityEngine.Object ).name = this.name + " " + graphType.Name;
+                var friendlyName = this.name + " " + graphType.Name;
+                ( boundGraphInstance as UnityEngine.Object ).name = friendlyName;
+                boundGraphInstance.name = friendlyName;
                 boundGraphInstance.UpdateReferencesFromOwner(this);
                 boundGraphInstance.Validate();
                 boundGraphSerialization = boundGraphInstance.Serialize(false, boundGraphObjectReferences);
 
-                graph = boundGraphInstance;
+                //set graph to null. This will remove previous asset reference if any and avoid AssetBundle build warnings
+                graph = null;
             }
         }
 
@@ -329,6 +330,7 @@ namespace NodeCanvas.Framework
                 return;
             }
 
+            //cleanup
             graph = null;
             boundGraphInstance = null;
             if ( target == null ) {
@@ -337,6 +339,7 @@ namespace NodeCanvas.Framework
                 return;
             }
 
+            //serialize target and store boundGraphSerialization data
             target.Serialize();
             target.GetSerializationData(out boundGraphSerialization, out boundGraphObjectReferences);
             Validate(); //validate to handle bound graph instance
@@ -390,7 +393,17 @@ namespace NodeCanvas.Framework
 
         ///The current behaviour Graph assigned
         sealed public override Graph graph {
-            get { return _graph; }
+            get
+            {
+#if UNITY_EDITOR
+                //In Editor only and if graph is bound, return the bound graph instance
+                if ( graphIsBound && !Application.isPlaying ) {
+                    return boundGraphInstance;
+                }
+#endif
+                //In runtime an instance of either boundGraphSerialization json or Asset Graph is created in awake
+                return _graph;
+            }
             set { _graph = (T)value; }
         }
 

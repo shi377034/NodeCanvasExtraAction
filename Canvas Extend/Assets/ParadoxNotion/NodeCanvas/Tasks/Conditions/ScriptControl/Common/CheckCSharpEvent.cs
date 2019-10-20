@@ -245,7 +245,7 @@ namespace NodeCanvas.Tasks.Conditions
         }
 
         public void Raised(T eventValue) {
-            if ( Equals(checkValue.value, eventValue) ) {
+            if ( ObjectUtils.TrueEquals(checkValue.value, eventValue) ) {
                 YieldReturn(true);
             }
         }

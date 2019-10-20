@@ -251,10 +251,16 @@ namespace NodeCanvas.Framework
             newNode.graph = targetGraph;
             BBParameter.SetBBFields(newNode, targetGraph.blackboard);
 
-            var assignable = this as ITaskAssignable;
-            if ( assignable != null && assignable.task != null ) {
-                ( newNode as ITaskAssignable ).task = assignable.task.Duplicate(targetGraph);
+            //--
+            // var assignable = this as ITaskAssignable;
+            // if ( assignable != null && assignable.task != null ) {
+            //     ( newNode as ITaskAssignable ).task = assignable.task.Duplicate(targetGraph);
+            // }
+
+            foreach ( var task in Graph.GetTasksInElement(newNode) ) {
+                task.Validate(targetGraph);
             }
+            //--
 
             newNode.OnValidate(targetGraph);
             return newNode;

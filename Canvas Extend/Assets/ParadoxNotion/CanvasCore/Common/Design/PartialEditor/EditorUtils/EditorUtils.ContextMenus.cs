@@ -275,7 +275,7 @@ namespace ParadoxNotion.Design
                 }
 
                 if ( parameters.Length > 0 ) {
-                    if ( parameters.Any(param => !acceptedParamsType.IsAssignableFrom(param.ParameterType)) ) {
+                    if ( acceptedParamsType != typeof(object) && parameters.Any(param => !acceptedParamsType.IsAssignableFrom(param.ParameterType)) ) {
                         continue;
                     }
                 }

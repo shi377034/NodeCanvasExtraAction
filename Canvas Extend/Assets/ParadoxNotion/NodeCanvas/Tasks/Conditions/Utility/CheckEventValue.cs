@@ -26,7 +26,7 @@ namespace NodeCanvas.Tasks.Conditions
             if ( isActive && receivedEvent.name.ToUpper() == eventName.value.ToUpper() ) {
 
                 var receivedValue = receivedEvent.value;
-                if ( object.Equals(receivedValue, value.value) ) {
+                if ( ObjectUtils.TrueEquals(receivedValue, value.value) ) {
 
 #if UNITY_EDITOR
                     if ( NodeCanvas.Editor.Prefs.logEvents ) {

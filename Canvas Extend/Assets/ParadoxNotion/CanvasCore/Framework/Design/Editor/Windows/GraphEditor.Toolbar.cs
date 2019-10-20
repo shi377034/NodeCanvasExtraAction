@@ -199,6 +199,13 @@ namespace NodeCanvas.Editor
                 });
             } else menu.AddDisabledItem(new GUIContent("Promote Defined Parameters To Variables"));
 
+            // menu.AddItem(new GUIContent("Force Deserialize"), false, () =>
+            // {
+            //     graph.Deserialize();
+            //     graph.Validate();
+            //     GraphEditorUtility.activeElement = null;
+            // });
+
             return menu;
         }
 

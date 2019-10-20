@@ -73,22 +73,25 @@ namespace NodeCanvas.Framework
         public static Task Create(Type type, ITaskSystem newOwnerSystem) {
             var newTask = (Task)Activator.CreateInstance(type);
             newOwnerSystem.RecordUndo("New Task");
-            newTask.SetOwnerSystem(newOwnerSystem);
-            BBParameter.SetBBFields(newTask, newOwnerSystem.blackboard);
-            newTask.OnValidate(newOwnerSystem);
+            newTask.Validate(newOwnerSystem);
             newTask.OnCreate(newOwnerSystem);
             return newTask;
         }
 
-        //Duplicate the task for the target ITaskSystem
+        ///Duplicate the task for the target ITaskSystem
         virtual public Task Duplicate(ITaskSystem newOwnerSystem) {
             //Deep clone
             var newTask = JSONSerializer.Clone<Task>(this);
             newOwnerSystem.RecordUndo("Duplicate Task");
-            newTask.SetOwnerSystem(newOwnerSystem);
-            BBParameter.SetBBFields(newTask, newOwnerSystem.blackboard);
-            newTask.OnValidate(newOwnerSystem);
+            newTask.Validate(newOwnerSystem);
             return newTask;
+        }
+
+        ///Validate the task in respects to the target ITaskSystem
+        public void Validate(ITaskSystem ownerSystem) {
+            SetOwnerSystem(ownerSystem);
+            BBParameter.SetBBFields(this, ownerSystem.blackboard);
+            OnValidate(ownerSystem);
         }
 
         ///Called once the first time task is created

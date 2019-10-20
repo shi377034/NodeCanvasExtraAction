@@ -180,7 +180,7 @@ namespace NodeCanvas.Framework
             set
             {
                 if ( base.HasValueChangeEvent() ) { //check this first to avoid possible unescessary value boxing
-                    if ( !object.Equals(_value, value) ) {
+                    if ( !ObjectUtils.TrueEquals(_value, value) ) {
                         this._value = value;
                         if ( setter != null ) { setter(value); }
                         base.OnValueChanged(name, value);

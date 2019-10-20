@@ -26,7 +26,7 @@ namespace ParadoxNotion
 
             result = s;
             var underscoreIndex = result.IndexOf('_');
-            if ( underscoreIndex >= 0 ) {
+            if ( underscoreIndex <= 1 ) {
                 result = result.Substring(underscoreIndex + 1);
             }
             result = Regex.Replace(result, "(?<=[a-z])([A-Z])", " $1").CapitalizeFirst().Trim();

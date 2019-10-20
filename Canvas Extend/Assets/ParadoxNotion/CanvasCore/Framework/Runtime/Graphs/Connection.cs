@@ -113,10 +113,16 @@ namespace NodeCanvas.Framework
             var resultSourceIndex = newConnection.SetSourceNode(newSource);
             var resultTargetIndex = newConnection.SetTargetNode(newTarget);
 
-            var assignable = this as ITaskAssignable;
-            if ( assignable != null && assignable.task != null ) {
-                ( newConnection as ITaskAssignable ).task = assignable.task.Duplicate(newSource.graph);
+            //--
+            // var assignable = this as ITaskAssignable;
+            // if ( assignable != null && assignable.task != null ) {
+            //     ( newConnection as ITaskAssignable ).task = assignable.task.Duplicate(newSource.graph);
+            // }
+
+            foreach ( var task in Graph.GetTasksInElement(newConnection) ) {
+                task.Validate(newSource.graph);
             }
+            //--
 
             newConnection.OnValidate(resultSourceIndex, resultTargetIndex);
             return newConnection;
